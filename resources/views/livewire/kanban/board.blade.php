@@ -1,0 +1,260 @@
+<div>
+    {{-- ================================================================ Header --}}
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="page-title">Kanban Board</h1>
+            <p class="text-secondary text-sm mt-1">Drag tasks across columns to update their status.</p>
+        </div>
+        <div class="flex gap-2">
+            @if(auth()->user()->isManager() || auth()->user()->isDirector())
+            <button class="btn btn-primary btn-md" id="btn-create-task"
+                    wire:click="$set('showForm', true)">
+                + New Task
+            </button>
+            @endif
+        </div>
+    </div>
+
+    {{-- ================================================================ Filters --}}
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+        <select class="form-select" style="width:auto;" wire:model.live="filterType">
+            <option value="">All Types</option>
+            <option value="Client">Client</option>
+            <option value="Internal">Internal</option>
+        </select>
+        @if(auth()->user()->isManager() || auth()->user()->isDirector())
+        <select class="form-select" style="width:auto;" wire:model.live="filterPic">
+            <option value="">All Staff</option>
+            @foreach($staff as $s)
+                <option value="{{ $s->id }}">{{ $s->name }}</option>
+            @endforeach
+        </select>
+        @endif
+    </div>
+
+    {{-- ================================================================ Board --}}
+    @php
+        $columnColors = [
+            'New'        => '#4F46E5',
+            'In_Progress'=> '#C2410C',
+            'Review'     => '#92400E',
+            'Revision'   => '#B91C1C',
+            'Completed'  => '#065F46',
+        ];
+        $columnLabels = [
+            'New'        => 'New',
+            'In_Progress'=> 'In Progress',
+            'Review'     => 'Review',
+            'Revision'   => 'Revision',
+            'Completed'  => 'Completed',
+        ];
+    @endphp
+
+    {{-- Load Sortable.js for Drag & Drop --}}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <div class="kanban-board"
+         x-data="{
+             initSortable() {
+                 document.querySelectorAll('.kanban-cards').forEach(el => {
+                     if (el.sortableInstance) el.sortableInstance.destroy();
+                     el.sortableInstance = new Sortable(el, {
+                         group: 'kanban',
+                         animation: 150,
+                         ghostClass: 'kanban-card-ghost',
+                         onEnd: (evt) => {
+                             // If dropped in the same place without reordering
+                             if (evt.from === evt.to && evt.oldIndex === evt.newIndex) return;
+                             
+                             let taskId = evt.item.dataset.taskId;
+                             let newStatus = evt.to.dataset.status;
+                             
+                             // Get array of IDs in the target column in the new sorted order
+                             let newOrder = Array.from(evt.to.children)
+                                 .filter(child => child.dataset && child.dataset.taskId)
+                                 .map(child => child.dataset.taskId);
+                             
+                             if (taskId && newStatus) {
+                                 $wire.updateTaskOrder(taskId, newStatus, newOrder);
+                             }
+                         }
+                     });
+                 });
+             }
+         }"
+         x-init="
+             initSortable();
+             Livewire.hook('morph.updated', () => {
+                 initSortable();
+             });
+         ">
+        @foreach($statuses as $status)
+        @php $columnTasks = $tasks[$status] ?? collect(); @endphp
+        <div class="kanban-column" id="col-{{ strtolower(str_replace('_','-',$status)) }}">
+            <div class="kanban-column-header">
+                <span class="kanban-column-title" style="color:{{ $columnColors[$status] }};">
+                    {{ $columnLabels[$status] }}
+                </span>
+                <span class="kanban-column-count">{{ $columnTasks->count() }}</span>
+            </div>
+            <div class="kanban-cards" data-status="{{ $status }}">
+                @forelse($columnTasks as $task)
+                <div class="kanban-card {{ $task->is_takeover ? 'is-takeover' : '' }}"
+                     id="task-card-{{ $task->id }}"
+                     data-task-id="{{ $task->id }}"
+                     wire:click="$dispatch('openTask', { taskId: {{ $task->id }} })">
+
+                    @if($task->is_takeover)
+                    <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">
+                        <span class="badge badge-takeover">🔄 Takeover</span>
+                    </div>
+                    @endif
+
+                    <div class="kanban-card-title">{{ $task->title }}</div>
+
+                    <div class="kanban-card-meta">
+                        @if($task->client)
+                        <div class="kanban-card-meta-item">
+                            <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/>
+                            </svg>
+                            {{ $task->client->name }}
+                        </div>
+                        @endif
+                        <div class="kanban-card-meta-item">
+                            <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+                            </svg>
+                            {{ $task->pic?->name ?? '—' }}
+                        </div>
+                        <div class="kanban-card-meta-item">
+                            <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+                            </svg>
+                            <span style="{{ $task->deadline->isPast() && $task->status !== 'Completed' ? 'color:var(--color-error);font-weight:500;' : '' }}">
+                                {{ $task->deadline->format('d M Y') }}
+                            </span>
+                        </div>
+                        <div class="kanban-card-meta-item">
+                            <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"/>
+                            </svg>
+                            {{ $task->difficulty_points }} pts
+                        </div>
+                    </div>
+
+                    {{-- Action buttons --}}
+                    <div class="kanban-card-actions" wire:click.stop>
+                        {{-- Takeover button --}}
+                        @if($task->isTakeoverEligible() && auth()->id() !== $task->pic_id)
+                        <button class="btn btn-danger btn-sm" id="btn-takeover-{{ $task->id }}"
+                                wire:click="takeoverTask({{ $task->id }})"
+                                wire:confirm="Take over this task? You will receive a 20% bonus, but the original PIC will receive a 50% point penalty.">
+                            🔄 Take Over
+                        </button>
+                        @endif
+
+                        {{-- Move buttons based on role --}}
+                        @if(auth()->user()->isStaff() && $task->pic_id === auth()->id())
+                            @if($task->status === 'New')
+                                <button class="btn btn-secondary btn-sm" wire:click="moveTask({{ $task->id }}, 'In_Progress')">→ Start</button>
+                            @elseif($task->status === 'In_Progress')
+                                <button class="btn btn-secondary btn-sm" wire:click="moveTask({{ $task->id }}, 'Review')">→ Review</button>
+                            @endif
+                        @endif
+
+                        @if((auth()->user()->isManager() || auth()->user()->isDirector()) && in_array($task->status, ['Review']))
+                            <button class="btn btn-secondary btn-sm" wire:click="moveTask({{ $task->id }}, 'Completed')">✓ Approve</button>
+                            <button class="btn btn-danger btn-sm" wire:click="moveTask({{ $task->id }}, 'Revision')">✗ Revision</button>
+                        @endif
+                    </div>
+                </div>
+                @empty
+                <div style="text-align:center;padding:32px 8px;color:var(--color-neutral);font-size:13px;">
+                    No tasks
+                </div>
+                @endforelse
+            </div>
+        </div>
+        @endforeach
+    </div>
+
+    {{-- ================================================================ Task Slide-over --}}
+    @livewire('kanban.task-slide-over')
+
+    {{-- ================================================================ Create Task Modal --}}
+    @if($showForm)
+    <div class="modal-backdrop" wire:click.self="$set('showForm', false)">
+        <div class="modal" id="modal-create-task">
+            <div class="modal-header">
+                <h2 style="font-size:16px;font-weight:600;">{{ $editingTaskId ? 'Edit Task' : 'Create New Task' }}</h2>
+                <button class="btn btn-ghost btn-sm" wire:click="$set('showForm', false)">✕</button>
+            </div>
+            <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+                {{-- Reference selector --}}
+                <div class="form-group">
+                    <label class="form-label">Task Reference (optional)</label>
+                    <select class="form-select" wire:model="formRefId"
+                            wire:change="loadReference($event.target.value)">
+                        <option value="">— Select from library —</option>
+                        @foreach($references as $ref)
+                            <option value="{{ $ref->id }}">{{ $ref->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Title *</label>
+                    <input type="text" class="form-input" wire:model="formTitle" placeholder="Task title">
+                    @error('formTitle')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" wire:model="formDesc" placeholder="SOP or description..."></textarea>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label class="form-label">Type *</label>
+                        <select class="form-select" wire:model="formType">
+                            <option value="Client">Client</option>
+                            <option value="Internal">Internal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Difficulty Points *</label>
+                        <input type="number" class="form-input" wire:model="formPoints" min="0">
+                        @error('formPoints')<span class="form-error">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Client</label>
+                    <select class="form-select" wire:model="formClientId">
+                        <option value="">— Internal Task —</option>
+                        @foreach($clients as $client)
+                            <option value="{{ $client->id }}">{{ $client->name }} ({{ $client->code }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assign to PIC *</label>
+                    <select class="form-select" wire:model="formPicId">
+                        <option value="">— Select staff —</option>
+                        @foreach($staff as $s)
+                            <option value="{{ $s->id }}">{{ $s->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('formPicId')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Deadline *</label>
+                    <input type="datetime-local" class="form-input" wire:model="formDeadline">
+                    @error('formDeadline')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-md" wire:click="$set('showForm', false)">Cancel</button>
+                <button class="btn btn-primary btn-md" id="btn-save-task" wire:click="saveTask">Save Task</button>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>
