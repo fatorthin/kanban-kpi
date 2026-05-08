@@ -19,6 +19,10 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+            $table->foreignId('division_id')->nullable()->constrained()->nullOnDelete();
+            $table->decimal('base_point_rate', 12, 2)->default(0);
+            $table->string('fcm_token')->nullable();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
