@@ -23,6 +23,7 @@ class TaskSlideOver extends Component
         $this->task   = Task::with(['pic', 'originalPic', 'manager', 'client', 'taskReference', 'messages.user'])->findOrFail($taskId);
         $this->isOpen = true;
         $this->markAllRead();
+        $this->dispatch('taskMessagesRead');
     }
 
     public function close(): void
@@ -36,6 +37,7 @@ class TaskSlideOver extends Component
     {
         $this->validate(['newMessage' => 'required|string|max:2000']);
         $user = Auth::user();
+        $task = Task::findOrFail($this->taskId);
 
         $msg = TaskMessage::create([
             'task_id' => $this->taskId,
@@ -43,9 +45,22 @@ class TaskSlideOver extends Component
             'message' => $this->newMessage,
         ]);
 
+        activity()
+            ->useLog('task_activity')
+            ->causedBy($user)
+            ->performedOn($task)
+            ->withProperties([
+                'task_id' => $task->id,
+                'message_id' => $msg->id,
+                'message_preview' => mb_substr($msg->message, 0, 120),
+            ])
+            ->log('Pesan baru pada tugas: "' . $task->title . '"');
+
         $this->newMessage = '';
         $this->task       = Task::with(['messages.user'])->findOrFail($this->taskId);
         $this->markAllRead();
+        $this->dispatch('notify');
+        $this->dispatch('taskMessagesRead');
     }
 
     private function markAllRead(): void

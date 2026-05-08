@@ -13,9 +13,12 @@ use Livewire\Component;
 #[Layout('components.layouts.app')]
 class Board extends Component
 {
+    protected $listeners = ['taskMessagesRead' => '$refresh'];
+
     public ?int $filterPic      = null;
     public ?int $filterDivision = null;
     public string $filterType   = '';
+    public string $filterSearch = '';
 
     // Task creation/edit form
     public bool $showForm        = false;
@@ -53,7 +56,9 @@ class Board extends Component
     public function moveTask(int $taskId, string $newStatus): void
     {
         $task = Task::findOrFail($taskId);
+        /** @var User $user */
         $user = Auth::user();
+        $oldStatus = $task->status;
 
         $allowed = $this->canTransition($user, $task, $newStatus);
         if (! $allowed) {
@@ -61,14 +66,17 @@ class Board extends Component
             return;
         }
 
-        $task->previous_status = $task->status;
+        $task->previous_status = $oldStatus;
         $task->status = $newStatus;
+
+        if ($newStatus === 'Revision' && $oldStatus !== 'Revision') {
+            $task->revision_count++;
+        }
 
         if ($newStatus === 'Completed') {
             $task->completed_at = now();
-            if ($task->status === 'Revision') {
-                $task->increment('revision_count');
-            }
+        } else {
+            $task->completed_at = null;
         }
 
         $task->save();
@@ -89,6 +97,7 @@ class Board extends Component
     public function takeoverTask(int $taskId): void
     {
         $task    = Task::findOrFail($taskId);
+        /** @var User $newPic */
         $newPic  = Auth::user();
 
         if (! $task->isTakeoverEligible()) {
@@ -120,6 +129,7 @@ class Board extends Component
 
     public function saveTask(): void
     {
+        /** @var User $user */
         $user = Auth::user();
         if (! ($user->isManager() || $user->isDirector())) {
             return;
@@ -131,10 +141,10 @@ class Board extends Component
             'title'            => $this->formTitle,
             'description'      => $this->formDesc,
             'task_type'        => $this->formType,
-            'difficulty_points'=> $this->formPoints,
+            'difficulty_points' => $this->formPoints,
             'client_id'        => $this->formClientId,
             'pic_id'           => $this->formPicId,
-            'task_reference_id'=> $this->formRefId,
+            'task_reference_id' => $this->formRefId,
             'manager_id'       => $user->id,
             'deadline'         => $this->formDeadline,
             'status'           => 'New',
@@ -146,30 +156,46 @@ class Board extends Component
             Task::create($data);
         }
 
-        $this->reset(['showForm', 'editingTaskId', 'formTitle', 'formDesc', 'formType',
-            'formPoints', 'formClientId', 'formPicId', 'formRefId', 'formDeadline']);
+        $this->reset([
+            'showForm',
+            'editingTaskId',
+            'formTitle',
+            'formDesc',
+            'formType',
+            'formPoints',
+            'formClientId',
+            'formPicId',
+            'formRefId',
+            'formDeadline'
+        ]);
     }
 
     public function updateTaskOrder(int $taskId, string $newStatus, array $newOrder): void
     {
         $task = Task::findOrFail($taskId);
+        /** @var User $user */
         $user = Auth::user();
 
         // Check if status changed and validate transition
         if ($task->status !== $newStatus) {
+            $oldStatus = $task->status;
+
             if (! $this->canTransition($user, $task, $newStatus)) {
                 $this->dispatch('notify', type: 'error', message: 'You do not have permission to move this task.');
                 return;
             }
 
-            $task->previous_status = $task->status;
+            $task->previous_status = $oldStatus;
             $task->status = $newStatus;
+
+            if ($newStatus === 'Revision' && $oldStatus !== 'Revision') {
+                $task->revision_count++;
+            }
 
             if ($newStatus === 'Completed') {
                 $task->completed_at = now();
-                if ($task->status === 'Revision') {
-                    $task->increment('revision_count');
-                }
+            } else {
+                $task->completed_at = null;
             }
             $task->save();
             $this->dispatch('notify', type: 'success', message: 'Task moved to ' . $newStatus . '.');
@@ -192,7 +218,11 @@ class Board extends Component
         }
 
         if ($user->isStaff() && $task->pic_id === $user->id) {
-            $allowed = ['New' => ['In_Progress'], 'In_Progress' => ['Review']];
+            $allowed = [
+                'New' => ['In_Progress'],
+                'In_Progress' => ['Review'],
+                'Revision' => ['In_Progress'],
+            ];
             return in_array($newStatus, $allowed[$task->status] ?? []);
         }
 
@@ -201,6 +231,7 @@ class Board extends Component
 
     public function render(): \Illuminate\View\View
     {
+        /** @var User $user */
         $user     = Auth::user();
         $statuses = ['New', 'In_Progress', 'Review', 'Revision', 'Completed'];
 
@@ -217,7 +248,7 @@ class Board extends Component
         // Director sees all, with optional filters
         if ($user->isDirector()) {
             if ($this->filterDivision) {
-                $query->whereHas('pic', fn ($q) => $q->where('division_id', $this->filterDivision));
+                $query->whereHas('pic', fn($q) => $q->where('division_id', $this->filterDivision));
             }
             if ($this->filterPic) {
                 $query->where('pic_id', $this->filterPic);
@@ -228,7 +259,27 @@ class Board extends Component
             $query->where('task_type', $this->filterType);
         }
 
-        $tasks = $query->orderBy('sort_order', 'asc')->orderBy('id', 'desc')->get()->groupBy('status');
+        if ($this->filterSearch !== '') {
+            $search = '%' . trim($this->filterSearch) . '%';
+
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', $search)
+                    ->orWhere('description', 'like', $search)
+                    ->orWhereHas('client', fn($clientQuery) => $clientQuery->where('name', 'like', $search))
+                    ->orWhereHas('pic', fn($picQuery) => $picQuery->where('name', 'like', $search));
+            });
+        }
+
+        $tasks = $query
+            ->withCount([
+                'messages as unread_messages_count' => fn($messageQuery) => $messageQuery
+                    ->where('user_id', '!=', $user->id)
+                    ->whereDoesntHave('readStatuses', fn($readQuery) => $readQuery->where('user_id', $user->id)),
+            ])
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('status');
 
         $staff      = User::role('staff')->get();
         $clients    = Client::all();
