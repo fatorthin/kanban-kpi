@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('revision_count')->default(0);
             $table->dateTime('deadline');
             $table->dateTime('completed_at')->nullable();
+            $table->integer('sort_order')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });

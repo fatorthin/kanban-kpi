@@ -50,8 +50,7 @@
         <div class="notification-list">
             @forelse($activities as $activity)
                 @php
-                    $isUnread = is_null(auth()->user()->notifications_read_at)
-                        || $activity->created_at->gt(auth()->user()->notifications_read_at);
+                    $isUnread = !$activity->is_read;
                 @endphp
                 <div class="notification-item"
                      style="display:flex; gap:12px; padding:12px 16px; border-bottom:1px solid var(--color-border);
