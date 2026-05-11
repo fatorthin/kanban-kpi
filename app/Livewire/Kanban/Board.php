@@ -16,6 +16,25 @@ class Board extends Component
     public ?int $filterPic      = null;
     public ?int $filterDivision = null;
     public string $filterType   = '';
+    public string $search       = '';
+    public array $limits = [
+        'New'         => 5,
+        'In_Progress' => 5,
+        'Review'      => 5,
+        'Revision'    => 5,
+        'Completed'   => 5,
+    ];
+
+    public function loadMore(string $status): void
+    {
+        $this->limits[$status] += 5;
+    }
+
+    public function resetSearch(): void
+    {
+        $this->search = '';
+        $this->reset('limits');
+    }
 
     // Task creation/edit form
     public bool $showForm        = false;
@@ -228,12 +247,33 @@ class Board extends Component
             $query->where('task_type', $this->filterType);
         }
 
-        $tasks = $query->orderBy('sort_order', 'asc')->orderBy('id', 'desc')->get()->groupBy('status');
+        if ($this->search) {
+            $searchTerm = trim($this->search);
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('title', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('description', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        $tasks = [];
+        $hasMore = [];
+        $totalCounts = [];
+
+        foreach ($statuses as $status) {
+            $columnQuery = (clone $query)->where('status', $status);
+            $totalCounts[$status] = $columnQuery->count();
+            $tasks[$status] = $columnQuery->orderBy('sort_order', 'asc')
+                ->orderBy('id', 'desc')
+                ->limit($this->limits[$status])
+                ->get();
+            
+            $hasMore[$status] = $totalCounts[$status] > $this->limits[$status];
+        }
 
         $staff      = User::role('staff')->get();
         $clients    = Client::all();
         $references = TaskReference::all();
 
-        return view('livewire.kanban.board', compact('tasks', 'statuses', 'staff', 'clients', 'references'));
+        return view('livewire.kanban.board', compact('tasks', 'statuses', 'staff', 'clients', 'references', 'hasMore', 'totalCounts'));
     }
 }

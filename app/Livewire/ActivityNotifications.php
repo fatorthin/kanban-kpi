@@ -16,23 +16,38 @@ class ActivityNotifications extends Component
         ];
     }
 
+    public function markAllRead(): void
+    {
+        $user = Auth::user();
+        $user->notifications_read_at = now();
+        $user->save();
+    }
+
     public function render()
     {
         $user = Auth::user();
-        
-        // Fetch recent activities. 
-        // For simple notification, we show activities where the user is the subject, CAUSER, or PIC of the task.
+
+        // Fetch recent activities visible to this user
         $activities = Activity::latest()
             ->with(['causer', 'subject'])
-            ->where(function($q) use ($user) {
+            ->where(function ($q) use ($user) {
                 $q->where('causer_id', $user->id)
-                  ->orWhere('subject_type', 'App\Models\Task'); // Simplified for demo
+                  ->orWhere('subject_type', 'App\Models\Task');
             })
-            ->take(5)
+            ->take(15)
             ->get();
 
+        // Count unread: activities created after the user's last read timestamp
+        $unreadCount = $activities->filter(function ($activity) use ($user) {
+            if (is_null($user->notifications_read_at)) {
+                return true;
+            }
+            return $activity->created_at->gt($user->notifications_read_at);
+        })->count();
+
         return view('livewire.activity-notifications', [
-            'activities' => $activities
+            'activities'  => $activities,
+            'unreadCount' => $unreadCount,
         ]);
     }
 }

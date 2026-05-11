@@ -15,7 +15,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, SoftDeletes, HasRoles;
 
     protected $fillable = [
-        'name', 'email', 'password', 'division_id', 'base_point_rate', 'fcm_token',
+        'name', 'email', 'password', 'division_id', 'base_point_rate', 'fcm_token', 'notifications_read_at',
     ];
 
     protected $hidden = [
@@ -25,9 +25,10 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'base_point_rate'   => 'decimal:2',
+            'email_verified_at'      => 'datetime',
+            'password'               => 'hashed',
+            'base_point_rate'        => 'decimal:2',
+            'notifications_read_at'  => 'datetime',
         ];
     }
 

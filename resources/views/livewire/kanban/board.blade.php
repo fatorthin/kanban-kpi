@@ -16,7 +16,29 @@
     </div>
 
     {{-- ================================================================ Filters --}}
-    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+        {{-- Search bar --}}
+        <div style="position:relative;flex:1;min-width:200px;max-width:300px;">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-neutral);">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:16px;height:16px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+            </span>
+            <input type="text" class="form-input" placeholder="Search tasks..." 
+                   style="padding-left:34px; padding-right:34px;"
+                   wire:model.live.debounce.300ms="search">
+            
+            @if($search)
+            <button style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--color-neutral);background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;"
+                    wire:click="resetSearch"
+                    title="Clear search">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </button>
+            @endif
+        </div>
+
         <select class="form-select" style="width:auto;" wire:model.live="filterType">
             <option value="">All Types</option>
             <option value="Client">Client</option>
@@ -95,7 +117,7 @@
                 <span class="kanban-column-title" style="color:{{ $columnColors[$status] }};">
                     {{ $columnLabels[$status] }}
                 </span>
-                <span class="kanban-column-count">{{ $columnTasks->count() }}</span>
+                <span class="kanban-column-count">{{ $totalCounts[$status] }}</span>
             </div>
             <div class="kanban-cards" data-status="{{ $status }}">
                 @forelse($columnTasks as $task)
@@ -174,6 +196,16 @@
                     No tasks
                 </div>
                 @endforelse
+
+                @if($hasMore[$status])
+                <div style="padding:12px;text-align:center;">
+                    <button class="btn btn-ghost btn-sm w-full" 
+                            style="font-size:11px;color:var(--color-neutral);border:1px dashed var(--color-border);"
+                            wire:click="loadMore('{{ $status }}')">
+                        Load More...
+                    </button>
+                </div>
+                @endif
             </div>
         </div>
         @endforeach

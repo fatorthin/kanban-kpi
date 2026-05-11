@@ -1,6 +1,6 @@
 <div>
     @if($isOpen && $task)
-    <div class="slideover-backdrop" wire:click="close"></div>
+    <div class="slideover-backdrop"></div>
     <div class="slideover-panel" id="slideover-task-{{ $task->id }}">
         <div class="slideover-header">
             <div style="flex:1;min-width:0;">
