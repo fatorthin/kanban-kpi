@@ -79,14 +79,15 @@ body {
 }
 
 .sidebar-logo h1 {
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: -0.03em;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
     color: var(--color-text);
 }
 
 .sidebar-logo span {
     color: var(--color-primary);
+    font-weight: 500;
 }
 
 .mobile-sidebar-close {
@@ -108,19 +109,19 @@ body {
 }
 
 .sidebar-nav {
-    padding: 16px 12px;
+    padding: 24px 12px;
     flex: 1;
     overflow-y: auto;
 }
 
 .nav-section-label {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     color: var(--color-neutral);
-    padding: 8px 8px 4px;
-    margin-top: 12px;
+    padding: 8px 8px 6px;
+    margin-top: 16px;
 }
 
 .nav-link {
@@ -167,9 +168,8 @@ body {
 }
 
 .topbar {
-    height: 56px;
-    background: rgba(250, 250, 250, 0.85);
-    backdrop-filter: blur(8px);
+    height: 64px;
+    background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
     display: flex;
     align-items: center;
@@ -196,15 +196,21 @@ body {
 }
 
 .topbar-date {
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
     color: var(--color-text-secondary);
     white-space: nowrap;
 }
 
 .topbar-division {
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 600;
     color: var(--color-neutral);
     white-space: nowrap;
+    background: var(--color-bg);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border);
 }
 
 .mobile-nav-btn {
@@ -573,20 +579,28 @@ tr:hover td {
 }
 
 .notification-bell-btn:hover {
+    background: var(--color-bg);
     border-color: var(--color-primary);
     color: var(--color-primary);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
 .notification-badge {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 8px;
-    height: 8px;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
     background: var(--color-error);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
     border-radius: var(--radius-full);
     border: 2px solid var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
 }
 
 .notification-dropdown {
