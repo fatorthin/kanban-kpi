@@ -176,7 +176,7 @@
                             <div class="kanban-card-actions" wire:click.stop>
                                 {{-- Takeover button --}}
                                 @if ($task->isTakeoverEligible() && auth()->id() !== $task->pic_id)
-                                    <button class="btn btn-danger btn-sm" id="btn-takeover-{{ $task->id }}" wire:click="takeoverTask({{ $task->id }})" wire:confirm="Take over this task? You will receive a 20% bonus, but the original PIC will receive a 50% point penalty.">
+                                    <button class="btn btn-danger btn-sm" id="btn-takeover-{{ $task->id }}" wire:click="takeoverTask({{ $task->id }})">
                                         🔄 Take Over
                                     </button>
                                 @endif
@@ -254,7 +254,7 @@
                     <div class="responsive-grid grid-cols-1 md:grid-cols-2" style="gap:12px;">
                         <div class="form-group">
                             <label class="form-label">Type *</label>
-                            <select class="form-select" wire:model="formType">
+                            <select class="form-select" wire:model.live="formType">
                                 <option value="Client">Client</option>
                                 <option value="Internal">Internal</option>
                             </select>
@@ -267,15 +267,17 @@
                             @enderror
                         </div>
                     </div>
+                    @if($formType === 'Client')
                     <div class="form-group">
                         <label class="form-label">Client</label>
                         <select class="form-select" wire:model="formClientId">
-                            <option value="">— Internal Task —</option>
+                            <option value="">— Select Client —</option>
                             @foreach ($clients as $client)
                                 <option value="{{ $client->id }}">{{ $client->name }} ({{ $client->code }})</option>
                             @endforeach
                         </select>
                     </div>
+                    @endif
                     <div class="form-group">
                         <label class="form-label">Assign to PIC *</label>
                         <select class="form-select" wire:model="formPicId">
@@ -299,6 +301,44 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary btn-md" wire:click="$set('showForm', false)">Cancel</button>
                     <button class="btn btn-primary btn-md" id="btn-save-task" wire:click="saveTask">Save Task</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ================================================================ Takeover Modal --}}
+    @if ($showTakeoverModal)
+        <div class="modal-backdrop" wire:click.self="$set('showTakeoverModal', false)">
+            <div class="modal" style="max-width:400px;">
+                <div class="modal-header">
+                    <h2 style="font-size:16px;font-weight:600;">Takeover & Reassign</h2>
+                    <button class="btn btn-ghost btn-sm" wire:click="$set('showTakeoverModal', false)">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size:13px;color:var(--color-neutral);margin-bottom:16px;">
+                        This task has breached its deadline. Select a staff member to reassign it to.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label">Assign to PIC *</label>
+                        <select class="form-select" wire:model="takeoverPicId">
+                            <option value="">— Select recipient —</option>
+                            <optgroup label="Action">
+                                <option value="{{ auth()->id() }}">Take over for myself</option>
+                            </optgroup>
+                            @if($staff->count() > 0)
+                            <optgroup label="Delegate to Staff">
+                                @foreach ($staff as $s)
+                                    <option value="{{ $s->id }}">{{ $s->name }}</option>
+                                @endforeach
+                            </optgroup>
+                            @endif
+                        </select>
+                        @error('takeoverPicId') <span class="form-error">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-md" wire:click="$set('showTakeoverModal', false)">Cancel</button>
+                    <button class="btn btn-primary btn-md" wire:click="confirmTakeover">Confirm Takeover</button>
                 </div>
             </div>
         </div>

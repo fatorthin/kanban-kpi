@@ -73,7 +73,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Task Reference *</label>
-                    <select class="form-select" wire:model="refId">
+                    <select class="form-select" wire:model.live="refId">
                         <option value="">— Select reference —</option>
                         @foreach($references as $ref)
                             <option value="{{ $ref->id }}">{{ $ref->title }}</option>
@@ -81,15 +81,23 @@
                     </select>
                     @error('refId')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
+                
+                @php
+                    $selectedRef = $references->firstWhere('id', $refId);
+                @endphp
+
+                @if($selectedRef && $selectedRef->task_type === 'Client')
                 <div class="form-group">
-                    <label class="form-label">Client</label>
+                    <label class="form-label">Client *</label>
                     <select class="form-select" wire:model="clientId">
-                        <option value="">— Internal Task —</option>
+                        <option value="">— Select Client —</option>
                         @foreach($clients as $client)
                             <option value="{{ $client->id }}">{{ $client->name }}</option>
                         @endforeach
                     </select>
+                    @error('clientId')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
+                @endif
                 <div class="form-group">
                     <label class="form-label">Assign to PIC *</label>
                     <select class="form-select" wire:model="picId">

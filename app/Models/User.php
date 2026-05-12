@@ -20,6 +20,7 @@ class User extends Authenticatable
         'email', 
         'password', 
         'division_id', 
+        'manager_id',
         'base_point_rate', 
         'fcm_token', 
         'notifications_read_at',
@@ -43,6 +44,16 @@ class User extends Authenticatable
     public function division(): BelongsTo
     {
         return $this->belongsTo(Division::class);
+    }
+
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    public function subordinates(): HasMany
+    {
+        return $this->hasMany(User::class, 'manager_id');
     }
 
     public function assignedTasks(): HasMany

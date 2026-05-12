@@ -40,10 +40,27 @@
                     <div style="font-size:14px;font-weight:500;">{{ $task->manager?->name ?? '—' }}</div>
                 </div>
                 <div>
-                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--color-neutral);letter-spacing:0.06em;margin-bottom:4px;">Deadline</div>
-                    <div style="font-size:14px;font-weight:500;{{ $task->deadline->isPast() && $task->status !== 'Completed' ? 'color:var(--color-error);' : '' }}">
-                        {{ $task->deadline->format('d M Y, H:i') }}
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--color-neutral);letter-spacing:0.06em;">Deadline</div>
+                        @if(auth()->user()->isDirector() && !$isEditingDeadline)
+                            <button class="btn btn-ghost btn-sm" style="padding:2px 4px;font-size:10px;height:auto;" wire:click="editDeadline">Edit</button>
+                        @endif
                     </div>
+
+                    @if($isEditingDeadline)
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <input type="datetime-local" class="form-input" style="font-size:13px;padding:4px 8px;height:auto;" wire:model="newDeadline">
+                            <div style="display:flex;gap:4px;">
+                                <button class="btn btn-primary btn-sm" style="flex:1;padding:4px;font-size:11px;" wire:click="saveDeadline">Save</button>
+                                <button class="btn btn-secondary btn-sm" style="flex:1;padding:4px;font-size:11px;" wire:click="cancelEditDeadline">Cancel</button>
+                            </div>
+                            @error('newDeadline') <span class="form-error" style="font-size:10px;">{{ $message }}</span> @enderror
+                        </div>
+                    @else
+                        <div style="font-size:14px;font-weight:500;{{ $task->deadline->isPast() && $task->status !== 'Completed' ? 'color:var(--color-error);' : '' }}">
+                            {{ $task->deadline->format('d M Y, H:i') }}
+                        </div>
+                    @endif
                 </div>
                 <div>
                     <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--color-neutral);letter-spacing:0.06em;margin-bottom:4px;">Points</div>

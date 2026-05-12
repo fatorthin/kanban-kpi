@@ -24,6 +24,7 @@ class Index extends Component
 
     protected array $rules = [
         'refId'      => 'required|exists:task_references,id',
+        'clientId'   => 'nullable|exists:clients,id',
         'picId'      => 'required|exists:users,id',
         'frequency'  => 'required|in:Daily,Weekly,Monthly,Yearly',
         'dayOfMonth' => 'nullable|integer|min:1|max:31',
@@ -31,11 +32,19 @@ class Index extends Component
 
     public function save(): void
     {
-        $this->validate();
+        $selectedRef = TaskReference::find($this->refId);
+        $isClientTask = $selectedRef && $selectedRef->task_type === 'Client';
+
+        $rules = $this->rules;
+        if ($isClientTask) {
+            $rules['clientId'] = 'required|exists:clients,id';
+        }
+
+        $this->validate($rules);
 
         $data = [
             'task_reference_id' => $this->refId,
-            'client_id'         => $this->clientId,
+            'client_id'         => $isClientTask ? $this->clientId : null,
             'pic_id'            => $this->picId,
             'manager_id'        => Auth::id(),
             'frequency'         => $this->frequency,

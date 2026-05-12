@@ -32,6 +32,10 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:manager|director')->group(function () {
         Route::get('/task-library', TaskLibraryIndex::class)->name('task-library');
         Route::get('/clients', ClientsIndex::class)->name('clients');
+    });
+
+    // User Management (Director only)
+    Route::middleware('role:director')->group(function () {
         Route::get('/staff', StaffIndex::class)->name('staff');
     });
 

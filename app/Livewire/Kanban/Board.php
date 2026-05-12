@@ -51,12 +51,17 @@ class Board extends Component
     public ?int $formRefId       = null;
     public string $formDeadline  = '';
 
+    // Takeover reassignment
+    public bool $showTakeoverModal = false;
+    public ?int $takeoverTaskId   = null;
+    public ?int $takeoverPicId    = null;
+
     protected array $rules = [
         'formTitle'    => 'required|string|max:255',
         'formDesc'     => 'nullable|string',
         'formType'     => 'required|in:Client,Internal',
         'formPoints'   => 'required|integer|min:0',
-        'formClientId' => 'nullable|exists:clients,id',
+        'formClientId' => 'required_if:formType,Client|nullable|exists:clients,id',
         'formPicId'    => 'required|exists:users,id',
         'formDeadline' => 'required|date',
     ];
@@ -115,35 +120,64 @@ class Board extends Component
 
     public function takeoverTask(int $taskId): void
     {
-        $task    = Task::findOrFail($taskId);
-        /** @var User $newPic */
-        $newPic  = Auth::user();
+        $task = Task::findOrFail($taskId);
+        /** @var User $user */
+        $user = Auth::user();
 
         if (! $task->isTakeoverEligible()) {
             $this->dispatch('notify', type: 'error', message: 'This task is not eligible for takeover.');
             return;
         }
 
-        if ($task->pic_id === $newPic->id) {
-            $this->dispatch('notify', type: 'error', message: 'You are already the PIC of this task.');
+        // If manager, show modal to pick a subordinate
+        if ($user->isManager()) {
+            $this->takeoverTaskId = $taskId;
+            $this->takeoverPicId = null;
+            $this->showTakeoverModal = true;
+            return;
+        }
+
+        // Default behavior (staff/director): take it for themselves
+        $this->executeTakeover($task, $user->id);
+    }
+
+    public function confirmTakeover(): void
+    {
+        $this->validate([
+            'takeoverPicId' => 'required|exists:users,id'
+        ]);
+
+        $task = Task::findOrFail($this->takeoverTaskId);
+        $this->executeTakeover($task, $this->takeoverPicId);
+        $this->showTakeoverModal = false;
+    }
+
+    private function executeTakeover(Task $task, int $newPicId): void
+    {
+        /** @var User $causer */
+        $causer = Auth::user();
+        $newPic = User::findOrFail($newPicId);
+
+        if ($task->pic_id === $newPicId) {
+            $this->dispatch('notify', type: 'error', message: 'User is already the PIC of this task.');
             return;
         }
 
         $task->original_pic_id  = $task->original_pic_id ?? $task->pic_id;
-        $task->pic_id           = $newPic->id;
+        $task->pic_id           = $newPicId;
         $task->is_takeover      = true;
         $task->takeover_reason  = 'Deadline Breached';
         $task->save();
 
-        activity()->causedBy($newPic)->performedOn($task)
+        activity()->causedBy($causer)->performedOn($task)
             ->withProperties([
                 'original_pic_id' => $task->original_pic_id,
-                'new_pic_id'      => $newPic->id,
+                'new_pic_id'      => $newPicId,
                 'reason'          => 'Deadline Breached',
             ])
-            ->log("Tugas \"{$task->title}\" diambil alih dari PIC sebelumnya.");
+            ->log("Tugas \"{$task->title}\" diambil alih dan dialihkan ke {$newPic->name}.");
 
-        $this->dispatch('notify', type: 'success', message: 'Task taken over successfully.');
+        $this->dispatch('notify', type: 'success', message: 'Task taken over and reassigned.');
     }
 
     public function saveTask(): void
@@ -161,7 +195,7 @@ class Board extends Component
             'description'      => $this->formDesc,
             'task_type'        => $this->formType,
             'difficulty_points' => $this->formPoints,
-            'client_id'        => $this->formClientId,
+            'client_id'        => $this->formType === 'Client' ? $this->formClientId : null,
             'pic_id'           => $this->formPicId,
             'task_reference_id' => $this->formRefId,
             'manager_id'       => $user->id,
@@ -264,7 +298,10 @@ class Board extends Component
         if ($user->isStaff()) {
             $query->where('pic_id', $user->id);
         } elseif ($user->isManager()) {
-            $query->where('manager_id', $user->id);
+            $query->where(function ($q) use ($user) {
+                $q->where('manager_id', $user->id)
+                    ->orWhereHas('pic', fn($sq) => $sq->where('manager_id', $user->id));
+            });
             if ($this->filterPic) {
                 $query->where('pic_id', $this->filterPic);
             }
@@ -309,7 +346,11 @@ class Board extends Component
             $hasMore[$status] = $totalCounts[$status] > $this->limits[$status];
         }
 
-        $staff      = User::role('staff')->get();
+        $staff = User::role('staff');
+        if ($user->isManager()) {
+            $staff->where('manager_id', $user->id);
+        }
+        $staff = $staff->get();
         $clients    = Client::all();
         $references = TaskReference::all();
 

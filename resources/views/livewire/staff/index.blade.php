@@ -19,6 +19,7 @@
                     <th>Email</th>
                     <th>Role</th>
                     <th>Division</th>
+                    <th>Manager</th>
                     <th>Point Rate</th>
                     <th style="width:100px;"></th>
                 </tr>
@@ -42,6 +43,13 @@
                         </span>
                     </td>
                     <td style="color:var(--color-text-secondary);">{{ $user->division?->name ?? '—' }}</td>
+                    <td style="color:var(--color-text-secondary);">
+                        @if($user->roles->first()?->name === 'staff')
+                            {{ $user->manager?->name ?? '—' }}
+                        @else
+                            —
+                        @endif
+                    </td>
                     <td style="font-weight:500;">Rp {{ number_format($user->base_point_rate, 0, ',', '.') }}</td>
                     <td>
                         <div style="display:flex;gap:6px;">
@@ -82,7 +90,7 @@
                 <div class="responsive-grid grid-cols-1 md:grid-cols-2" style="gap:12px;">
                     <div class="form-group">
                         <label class="form-label">Role *</label>
-                        <select class="form-select" wire:model="role">
+                        <select class="form-select" wire:model.live="role">
                             <option value="staff">Staff</option>
                             <option value="manager">Manager</option>
                             <option value="director">Director</option>
@@ -98,6 +106,19 @@
                         </select>
                     </div>
                 </div>
+
+                @if($role === 'staff')
+                <div class="form-group">
+                    <label class="form-label">Assigned Manager</label>
+                    <select class="form-select" wire:model="managerId">
+                        <option value="">— No Manager —</option>
+                        @foreach($managers as $m)
+                            <option value="{{ $m->id }}">{{ $m->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('managerId')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                @endif
                 <div class="form-group">
                     <label class="form-label">Base Point Rate (Rp/point) *</label>
                     <input type="number" class="form-input" wire:model="pointRate" min="0">

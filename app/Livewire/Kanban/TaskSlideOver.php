@@ -14,6 +14,8 @@ class TaskSlideOver extends Component
     public ?Task $task    = null;
     public bool $isOpen   = false;
     public string $newMessage = '';
+    public string $newDeadline = '';
+    public bool $isEditingDeadline = false;
 
     protected $listeners = ['openTask' => 'open'];
 
@@ -31,6 +33,37 @@ class TaskSlideOver extends Component
         $this->isOpen = false;
         $this->task   = null;
         $this->taskId = null;
+    }
+
+    public function editDeadline(): void
+    {
+        if (! Auth::user()->isDirector()) return;
+        $this->newDeadline = $this->task->deadline->format('Y-m-d\TH:i');
+        $this->isEditingDeadline = true;
+    }
+
+    public function saveDeadline(): void
+    {
+        if (! Auth::user()->isDirector()) return;
+        $this->validate(['newDeadline' => 'required|date']);
+
+        $oldDeadline = $this->task->deadline->format('d M Y, H:i');
+        $this->task->update(['deadline' => $this->newDeadline]);
+        
+        activity()
+            ->useLog('task_activity')
+            ->causedBy(Auth::user())
+            ->performedOn($this->task)
+            ->log("Deadline tugas diubah dari {$oldDeadline} menjadi " . $this->task->deadline->format('d M Y, H:i'));
+
+        $this->isEditingDeadline = false;
+        $this->task->refresh();
+        $this->dispatch('notify', type: 'success', message: 'Deadline updated.');
+    }
+
+    public function cancelEditDeadline(): void
+    {
+        $this->isEditingDeadline = false;
     }
 
     public function sendMessage(): void

@@ -20,6 +20,7 @@ class Index extends Component
     public string $password   = '';
     public string $role       = 'staff';
     public ?int $divisionId   = null;
+    public ?int $managerId    = null;
     public float $pointRate   = 0;
 
     protected array $rules = [
@@ -28,6 +29,7 @@ class Index extends Component
         'password'   => 'nullable|min:8',
         'role'       => 'required|in:staff,manager,director',
         'divisionId' => 'nullable|exists:divisions,id',
+        'managerId'  => 'nullable|exists:users,id',
         'pointRate'  => 'required|numeric|min:0',
     ];
 
@@ -39,6 +41,7 @@ class Index extends Component
         $this->email     = $user->email;
         $this->role      = $user->roles->first()?->name ?? 'staff';
         $this->divisionId= $user->division_id;
+        $this->managerId = $user->manager_id;
         $this->pointRate = $user->base_point_rate;
         $this->showForm  = true;
     }
@@ -55,6 +58,7 @@ class Index extends Component
             'name'            => $this->name,
             'email'           => $this->email,
             'division_id'     => $this->divisionId,
+            'manager_id'      => $this->managerId,
             'base_point_rate' => $this->pointRate,
         ];
 
@@ -71,12 +75,12 @@ class Index extends Component
 
         $user->syncRoles([$this->role]);
 
-        $this->reset(['showForm', 'editingId', 'name', 'email', 'password', 'role', 'divisionId', 'pointRate']);
+        $this->reset(['showForm', 'editingId', 'name', 'email', 'password', 'role', 'divisionId', 'managerId', 'pointRate']);
     }
 
     public function render(): \Illuminate\View\View
     {
-        $users = User::with(['division', 'roles'])
+        $users = User::with(['division', 'roles', 'manager'])
             ->when($this->search, fn ($q) =>
                 $q->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('email', 'like', '%' . $this->search . '%')
@@ -85,6 +89,7 @@ class Index extends Component
         return view('livewire.staff.index', [
             'users'     => $users,
             'divisions' => Division::all(),
+            'managers'  => User::role('manager')->get(),
         ]);
     }
 }
