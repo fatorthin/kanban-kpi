@@ -13,6 +13,7 @@ class ActivityNotifications extends Component
 {
     public function markAsRead(int $activityId): void
     {
+        /** @var User $user */
         $user = Auth::user();
         $activity = $this->relevantActivitiesQuery($user)->whereKey($activityId)->first();
 
@@ -22,12 +23,13 @@ class ActivityNotifications extends Component
 
         ActivityReadStatus::updateOrCreate(
             ['activity_id' => $activity->id, 'user_id' => $user->id],
-            ['read_at' => now()]
+            ['read_at' => \Illuminate\Support\Carbon::now()]
         );
     }
 
     public function markAllRead(): void
     {
+        /** @var User $user */
         $user = Auth::user();
         $activityIds = $this->relevantActivitiesQuery($user)->pluck('id');
 
@@ -39,7 +41,7 @@ class ActivityNotifications extends Component
         }
         
         // Also update the simple timestamp for backward compatibility if needed
-        $user->notifications_read_at = now();
+        $user->notifications_read_at = \Illuminate\Support\Carbon::now();
         $user->save();
     }
 
@@ -53,6 +55,7 @@ class ActivityNotifications extends Component
 
     public function render()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         $activities = $this->relevantActivitiesQuery($user)

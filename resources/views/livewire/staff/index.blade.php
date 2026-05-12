@@ -1,14 +1,14 @@
 <div>
     <div class="flex flex-responsive items-center justify-between mb-6">
         <div>
-            <h1 class="page-title">Staff & Divisions</h1>
-            <p class="text-secondary text-sm mt-1">Manage team members, roles, and point rates.</p>
+            <h1 class="page-title">User Management</h1>
+            <p class="text-secondary text-sm mt-1">Manage system users, roles, and division assignments.</p>
         </div>
-        <button class="btn btn-primary btn-md w-full-mobile" id="btn-add-staff" wire:click="$set('showForm', true)">+ Add Staff</button>
+        <button class="btn btn-primary btn-md w-full-mobile" id="btn-add-staff" wire:click="$set('showForm', true)">+ Add User</button>
     </div>
 
     <div style="margin-bottom:16px;">
-        <input type="text" class="form-input w-full-mobile" style="max-width:320px;" wire:model.live="search" placeholder="Search staff...">
+        <input type="text" class="form-input w-full-mobile" style="max-width:320px;" wire:model.live="search" placeholder="Search users...">
     </div>
 
     <div class="table-wrapper">
@@ -50,7 +50,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" style="text-align:center;color:var(--color-neutral);padding:40px;">No staff found.</td></tr>
+                <tr><td colspan="6" style="text-align:center;color:var(--color-neutral);padding:40px;">No users found.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -60,7 +60,7 @@
     <div class="modal-backdrop" wire:click.self="$set('showForm', false)">
         <div class="modal" id="modal-staff-form">
             <div class="modal-header">
-                <h2 style="font-size:16px;font-weight:600;">{{ $editingId ? 'Edit Staff' : 'Add Staff' }}</h2>
+                <h2 style="font-size:16px;font-weight:600;">{{ $editingId ? 'Edit User' : 'Add User' }}</h2>
                 <button class="btn btn-ghost btn-sm" wire:click="$set('showForm', false)">✕</button>
             </div>
             <div class="modal-body">
@@ -106,7 +106,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary btn-md" wire:click="$set('showForm', false)">Cancel</button>
-                <button class="btn btn-primary btn-md" id="btn-save-staff" wire:click="save">Save</button>
+                <button class="btn btn-primary btn-md" id="btn-save-staff" wire:click="save">Save User</button>
             </div>
         </div>
     </div>
