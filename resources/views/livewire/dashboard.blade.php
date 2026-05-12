@@ -14,7 +14,7 @@
     </div>
 
     {{-- ============================================== Stats Grid --}}
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px;">
+    <div class="stats-grid mb-6" style="margin-bottom:32px;">
         <div class="stat-card">
             <div class="stat-value" style="color:var(--color-primary);">{{ $stats['total'] }}</div>
             <div class="stat-label">Total Tasks</div>
@@ -37,7 +37,7 @@
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <div class="responsive-grid grid-cols-1 md:grid-cols-2 md:gap-6">
 
         {{-- ========================================= KPI Summary Card --}}
         <div class="card">

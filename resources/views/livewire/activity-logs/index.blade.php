@@ -1,5 +1,5 @@
 <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-responsive items-center justify-between mb-6">
         <div>
             <h1 class="page-title">Activity Logs</h1>
             <p class="text-secondary text-sm mt-1">Audit trail of system events and task takeovers.</p>
@@ -7,7 +7,7 @@
     </div>
 
     <div style="margin-bottom:16px;">
-        <input type="text" class="form-input" style="max-width:320px;" wire:model.live="search" placeholder="Search logs...">
+        <input type="text" class="form-input w-full-mobile" style="max-width:320px;" wire:model.live="search" placeholder="Search logs...">
     </div>
 
     <div class="table-wrapper">

@@ -1,15 +1,15 @@
 <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-responsive items-center justify-between mb-6">
         <div>
             <h1 class="page-title">Task Library</h1>
             <p class="text-secondary text-sm mt-1">Manage your standard task templates and SOP references.</p>
         </div>
-        <button class="btn btn-primary btn-md" id="btn-add-task-ref" wire:click="$set('showForm', true)">+ Add Reference</button>
+        <button class="btn btn-primary btn-md w-full-mobile" id="btn-add-task-ref" wire:click="$set('showForm', true)">+ Add Reference</button>
     </div>
 
     {{-- Search --}}
     <div style="margin-bottom:16px;">
-        <input type="text" class="form-input" style="max-width:320px;" wire:model.live="search" placeholder="Search task references...">
+        <input type="text" class="form-input w-full-mobile" style="max-width:320px;" wire:model.live="search" placeholder="Search task references...">
     </div>
 
     {{-- Table --}}
@@ -68,7 +68,7 @@
                     <label class="form-label">SOP / Description</label>
                     <textarea class="form-textarea" wire:model="desc" placeholder="Standard operating procedures..."></textarea>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="responsive-grid grid-cols-1 md:grid-cols-2" style="gap:12px;">
                     <div class="form-group">
                         <label class="form-label">Type *</label>
                         <select class="form-select" wire:model="type">

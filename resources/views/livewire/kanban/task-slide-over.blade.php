@@ -17,7 +17,7 @@
 
         <div class="slideover-body">
             {{-- Meta Info --}}
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+            <div class="responsive-grid grid-cols-2" style="gap:16px;margin-bottom:24px;">
                 <div>
                     <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--color-neutral);letter-spacing:0.06em;margin-bottom:4px;">Client</div>
                     <div style="font-size:14px;font-weight:500;">{{ $task->client?->name ?? 'Internal' }}</div>

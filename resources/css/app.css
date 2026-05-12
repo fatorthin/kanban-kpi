@@ -244,6 +244,12 @@ body {
     flex: 1;
 }
 
+@media (max-width: 768px) {
+    .page-content {
+        padding: 16px;
+    }
+}
+
 /* ------------------------------------------------------------------ Buttons */
 .btn {
     display: inline-flex;
@@ -343,6 +349,12 @@ body {
 
 .card-body {
     padding: 24px;
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 16px;
+    }
 }
 
 /* ------------------------------------------------------------------ Forms */
@@ -459,7 +471,8 @@ body {
 .table-wrapper {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -499,6 +512,7 @@ tr:hover td {
     gap: 16px;
     overflow-x: auto;
     padding-bottom: 16px;
+    scroll-snap-type: x mandatory;
 }
 
 .kanban-column {
@@ -509,6 +523,7 @@ tr:hover td {
     border-radius: var(--radius-xl);
     display: flex;
     flex-direction: column;
+    scroll-snap-align: start;
 }
 
 .kanban-column-header {
@@ -615,6 +630,13 @@ tr:hover td {
     z-index: 1000;
     overflow: hidden;
     animation: dropdownFade 0.2s ease;
+}
+
+@media (max-width: 480px) {
+    .notification-dropdown {
+        width: calc(100vw - 32px);
+        right: -8px;
+    }
 }
 
 @keyframes dropdownFade {
@@ -875,6 +897,12 @@ tr:hover td {
     padding: 24px;
     transition: box-shadow 200ms ease;
 }
+
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 16px;
+    }
+}
 .stat-card:hover {
     box-shadow: var(--shadow-card-hover);
 }
@@ -1028,11 +1056,91 @@ tr:hover td {
 .text-muted {
     color: var(--color-neutral);
 }
+
+@media (max-width: 768px) {
+    .flex-responsive {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    .flex-responsive-center {
+        flex-direction: column;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+    .w-full-mobile {
+        width: 100% !important;
+        max-width: none !important;
+    }
+    .hidden-mobile {
+        display: none !important;
+    }
+}
+
 .page-title {
     font-size: 24px;
     font-weight: 700;
     letter-spacing: -0.03em;
     color: var(--color-text);
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 20px;
+    }
+}
+
+/* ------------------------------------------------------------------ Grid System */
+.responsive-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.grid-cols-1 { grid-template-columns: 1fr; }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (min-width: 768px) {
+    .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .md\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .md\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .md\:gap-6 { gap: 24px; }
+}
+
+@media (min-width: 1024px) {
+    .lg\:grid-cols-5 { grid-template-columns: repeat(5, 1fr); }
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+@media (min-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px;
+    }
+}
+
+.grid-cols-mobile-1 {
+    grid-template-columns: 1fr;
+}
+
+@media (max-width: 480px) {
+    .kanban-board {
+        flex-direction: column;
+        overflow-x: visible;
+        scroll-snap-type: none;
+        gap: 24px;
+    }
+    .kanban-column {
+        min-width: 100% !important;
+        margin-right: 0;
+        scroll-snap-align: none;
+    }
 }
 
 /* ------------------------------------------------------------------ KPI Score bars */
@@ -1072,16 +1180,15 @@ tr:hover td {
         display: inline-flex;
     }
     .topbar {
-        padding: 0 14px;
+        padding: 0 12px;
+        height: 52px;
     }
     .topbar-right {
-        gap: 10px;
+        gap: 6px;
     }
     .topbar-date {
-        font-size: 13px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 56vw;
+        font-size: 11px;
+        max-width: 45vw;
     }
 }
 

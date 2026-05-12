@@ -1,11 +1,11 @@
 <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-responsive items-center justify-between mb-6">
         <div>
             <h1 class="page-title">Recurring Tasks</h1>
             <p class="text-secondary text-sm mt-1">Manage scheduled tasks and automation rules.</p>
         </div>
         @if(auth()->user()->isManager() || auth()->user()->isDirector())
-        <button class="btn btn-primary btn-md" id="btn-add-recurring" wire:click="$set('showForm', true)">+ Add Schedule</button>
+        <button class="btn btn-primary btn-md w-full-mobile" id="btn-add-recurring" wire:click="$set('showForm', true)">+ Add Schedule</button>
         @endif
     </div>
 
@@ -14,8 +14,8 @@
             <thead>
                 <tr>
                     <th>Reference / Title</th>
-                    <th>Client</th>
-                    <th>Assigned PIC</th>
+                    <th class="hidden-mobile">Client</th>
+                    <th class="hidden-mobile">Assigned PIC</th>
                     <th>Schedule</th>
                     <th>Status</th>
                     @if(auth()->user()->isManager() || auth()->user()->isDirector())
@@ -29,8 +29,8 @@
                     <td>
                         <div style="font-weight:500;">{{ $task->taskReference->title }}</div>
                     </td>
-                    <td>{{ $task->client?->name ?? 'Internal' }}</td>
-                    <td>
+                    <td class="hidden-mobile">{{ $task->client?->name ?? 'Internal' }}</td>
+                    <td class="hidden-mobile">
                         <div style="display:flex;align-items:center;gap:8px;">
                             <div style="width:24px;height:24px;border-radius:9999px;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;">
                                 {{ strtoupper(substr($task->pic?->name ?? 'U', 0, 2)) }}
@@ -100,7 +100,7 @@
                     </select>
                     @error('picId')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="responsive-grid grid-cols-1 md:grid-cols-2" style="gap:12px;">
                     <div class="form-group">
                         <label class="form-label">Frequency *</label>
                         <select class="form-select" wire:model.live="frequency">

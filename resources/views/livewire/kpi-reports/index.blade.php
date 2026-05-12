@@ -7,18 +7,18 @@
     </div>
 
     {{-- Period selector --}}
-    <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-        <div>
+    <div class="flex-responsive" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+        <div class="w-full-mobile">
             <label class="form-label">Month</label>
-            <select class="form-select" wire:model.live="month" style="width:auto;">
+            <select class="form-select w-full-mobile" wire:model.live="month" style="width:auto;">
                 @foreach(range(1,12) as $m)
                     <option value="{{ $m }}">{{ \Carbon\Carbon::createFromDate(null, $m)->format('F') }}</option>
                 @endforeach
             </select>
         </div>
-        <div>
+        <div class="w-full-mobile">
             <label class="form-label">Year</label>
-            <select class="form-select" wire:model.live="year" style="width:auto;">
+            <select class="form-select w-full-mobile" wire:model.live="year" style="width:auto;">
                 @foreach(range(now()->year, now()->year - 2) as $y)
                     <option value="{{ $y }}">{{ $y }}</option>
                 @endforeach
@@ -92,7 +92,7 @@
             <button class="btn btn-ghost btn-sm" wire:click="$set('selectedUserId', null)">✕ Close</button>
         </div>
         <div class="card-body">
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px;">
+            <div class="responsive-grid grid-cols-1 md:grid-cols-3 md:gap-6" style="margin-bottom:24px;">
                 @foreach(['productivity_score' => ['S_prod','Productivity'],'quality_score'=>['S_qual','Quality'],'timeliness_score'=>['S_time','Timeliness']] as $field => [$code, $label])
                 <div style="text-align:center;">
                     <div style="font-size:36px;font-weight:700;letter-spacing:-0.03em;color:var(--color-primary);">
@@ -105,7 +105,7 @@
                 </div>
                 @endforeach
             </div>
-            <div style="display:flex;justify-content:space-between;padding:16px;background:var(--color-bg);border-radius:var(--radius-lg);">
+            <div class="flex-responsive items-center justify-between" style="display:flex;justify-content:space-between;padding:16px;background:var(--color-bg);border-radius:var(--radius-lg);">
                 <div style="text-align:center;">
                     <div style="font-size:24px;font-weight:700;letter-spacing:-0.03em;">{{ number_format($detail->final_kpi_score, 2) }}</div>
                     <div class="text-sm text-secondary">Final NAK Score</div>

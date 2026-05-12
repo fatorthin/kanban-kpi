@@ -1,14 +1,14 @@
 <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-responsive items-center justify-between mb-6">
         <div>
             <h1 class="page-title">Staff & Divisions</h1>
             <p class="text-secondary text-sm mt-1">Manage team members, roles, and point rates.</p>
         </div>
-        <button class="btn btn-primary btn-md" id="btn-add-staff" wire:click="$set('showForm', true)">+ Add Staff</button>
+        <button class="btn btn-primary btn-md w-full-mobile" id="btn-add-staff" wire:click="$set('showForm', true)">+ Add Staff</button>
     </div>
 
     <div style="margin-bottom:16px;">
-        <input type="text" class="form-input" style="max-width:320px;" wire:model.live="search" placeholder="Search staff...">
+        <input type="text" class="form-input w-full-mobile" style="max-width:320px;" wire:model.live="search" placeholder="Search staff...">
     </div>
 
     <div class="table-wrapper">
@@ -79,7 +79,7 @@
                     <input type="password" class="form-input" wire:model="password">
                     @error('password')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="responsive-grid grid-cols-1 md:grid-cols-2" style="gap:12px;">
                     <div class="form-group">
                         <label class="form-label">Role *</label>
                         <select class="form-select" wire:model="role">

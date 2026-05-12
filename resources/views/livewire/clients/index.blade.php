@@ -1,14 +1,14 @@
 <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-responsive items-center justify-between mb-6">
         <div>
             <h1 class="page-title">Client Database</h1>
             <p class="text-secondary text-sm mt-1">Manage clients and their service grades.</p>
         </div>
-        <button class="btn btn-primary btn-md" id="btn-add-client" wire:click="$set('showForm', true)">+ Add Client</button>
+        <button class="btn btn-primary btn-md w-full-mobile" id="btn-add-client" wire:click="$set('showForm', true)">+ Add Client</button>
     </div>
 
     <div style="margin-bottom:16px;">
-        <input type="text" class="form-input" style="max-width:320px;" wire:model.live="search" placeholder="Search clients...">
+        <input type="text" class="form-input w-full-mobile" style="max-width:320px;" wire:model.live="search" placeholder="Search clients...">
     </div>
 
     <div class="table-wrapper">

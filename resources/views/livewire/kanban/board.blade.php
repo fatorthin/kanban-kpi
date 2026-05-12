@@ -1,6 +1,6 @@
 <div wire:poll.5s.visible>
     {{-- ================================================================ Header --}}
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-responsive items-center justify-between mb-6">
         <div>
             <h1 class="page-title">Kanban Board</h1>
             <p class="text-secondary text-sm mt-1">Drag tasks across columns to update their status.</p>
@@ -15,15 +15,15 @@
     </div>
 
     {{-- ================================================================ Filters --}}
-    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+    <div class="flex-responsive" style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
         {{-- Search bar --}}
-        <div style="position:relative;flex:1;min-width:200px;max-width:300px;">
+        <div class="w-full-mobile" style="position:relative;flex:1;min-width:200px;max-width:300px;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-neutral);">
                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:16px;height:16px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
             </span>
-            <input type="text" class="form-input" placeholder="Search tasks, clients, or PIC..." 
+            <input type="text" class="form-input w-full-mobile" placeholder="Search tasks, clients, or PIC..." 
                    style="padding-left:34px; padding-right:34px;"
                    wire:model.live.debounce.300ms="search">
             
@@ -38,13 +38,13 @@
             @endif
         </div>
 
-        <select class="form-select" style="width:auto;" wire:model.live="filterType">
+        <select class="form-select w-full-mobile" style="width:auto;" wire:model.live="filterType">
             <option value="">All Types</option>
             <option value="Client">Client</option>
             <option value="Internal">Internal</option>
         </select>
         @if (auth()->user()->isManager() || auth()->user()->isDirector())
-            <select class="form-select" style="width:auto;" wire:model.live="filterPic">
+            <select class="form-select w-full-mobile" style="width:auto;" wire:model.live="filterPic">
                 <option value="">All Staff</option>
                 @foreach ($staff as $s)
                     <option value="{{ $s->id }}">{{ $s->name }}</option>
@@ -133,15 +133,13 @@
                             @endif
 
                             <div class="kanban-card-title">{{ $task->title }}</div>
-
-                            <div class="kanban-card-meta">
+                            <div class="responsive-grid grid-cols-1" style="gap:4px;">
                                 @if ($task->client)
                                     <div class="kanban-card-meta-item">
                                         <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                                         </svg>
-                                        {{ $task->client->name }}
+                                        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $task->client->name }}</span>
                                     </div>
                                 @endif
                                 <div class="kanban-card-meta-item">
@@ -152,25 +150,25 @@
                                 </div>
                                 <div class="kanban-card-meta-item">
                                     <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
                                     </svg>
                                     <span style="{{ $task->deadline->isPast() && $task->status !== 'Completed' ? 'color:var(--color-error);font-weight:500;' : '' }}">
                                         {{ $task->deadline->format('d M Y') }}
                                     </span>
                                 </div>
-                                <div class="kanban-card-meta-item">
-                                    <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
-                                    </svg>
-                                    {{ $task->difficulty_points }} pts
-                                </div>
-                                <div class="kanban-card-meta-item">
-                                    <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                    </svg>
-                                    {{ $task->revision_count }}x revision
+                                <div style="display:flex;gap:12px;">
+                                    <div class="kanban-card-meta-item">
+                                        <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                                        </svg>
+                                        {{ $task->difficulty_points }} pts
+                                    </div>
+                                    <div class="kanban-card-meta-item">
+                                        <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                        </svg>
+                                        {{ $task->revision_count }}x rev
+                                    </div>
                                 </div>
                             </div>
 
@@ -253,7 +251,7 @@
                         <label class="form-label">Description</label>
                         <textarea class="form-textarea" wire:model="formDesc" placeholder="SOP or description..."></textarea>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="responsive-grid grid-cols-1 md:grid-cols-2" style="gap:12px;">
                         <div class="form-group">
                             <label class="form-label">Type *</label>
                             <select class="form-select" wire:model="formType">
