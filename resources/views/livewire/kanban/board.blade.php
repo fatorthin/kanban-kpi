@@ -217,7 +217,7 @@
     </div>
 
     {{-- ================================================================ Task Slide-over --}}
-    @livewire('kanban.task-slide-over')
+    @livewire('kanban.task-slide-over', [], key('task-slide-over-singleton'))
 
     {{-- ================================================================ Create Task Modal --}}
     @if ($showForm)

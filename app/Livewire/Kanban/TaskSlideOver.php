@@ -96,7 +96,7 @@ class TaskSlideOver extends Component
         $this->newMessage = '';
         $this->task       = Task::with(['messages.user'])->findOrFail($this->taskId);
         $this->markAllRead();
-        $this->dispatch('notify');
+        $this->dispatch('notify', type: 'success', message: 'Message sent.');
         $this->dispatch('taskMessagesRead');
     }
 

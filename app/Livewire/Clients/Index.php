@@ -19,7 +19,7 @@ class Index extends Component
     protected array $rules = [
         'name'  => 'required|string|max:255',
         'code'  => 'required|string|max:50|unique:clients,code',
-        'grade' => 'required|in:A,B,C,D,E,F',
+        'grade' => 'required|in:A,B,C,D,E,F,G',
     ];
 
     public function edit(int $id): void

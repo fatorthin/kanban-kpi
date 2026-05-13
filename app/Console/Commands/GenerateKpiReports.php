@@ -29,14 +29,28 @@ class GenerateKpiReports extends Command
             $tasks = Task::where('pic_id', $user->id)
                 ->where('status', 'Completed')
                 ->whereBetween('completed_at', [$startDate, $endDate])
+                ->with('client')
                 ->get();
 
             if ($tasks->isEmpty()) {
                 continue;
             }
 
-            // 1. Productivity: Sum of difficulty points
-            $totalPoints = $tasks->sum('difficulty_points');
+            // 1. Productivity: Sum of difficulty points * Client Grade Multiplier
+            $gradeMultipliers = [
+                'A' => 1.7, // Skor 7
+                'B' => 1.6, // Skor 6
+                'C' => 1.5, // Skor 5
+                'D' => 1.4, // Skor 4
+                'E' => 1.3, // Skor 3
+                'F' => 1.2, // Skor 2
+                'G' => 1.1  // Skor 1
+            ];
+
+            $totalPoints = $tasks->sum(function($task) use ($gradeMultipliers) {
+                $multiplier = $gradeMultipliers[$task->client?->grade] ?? 1.0;
+                return $task->difficulty_points * $multiplier;
+            });
             $prodScore = min(100, $totalPoints); // Baseline assumption: 100 points = 100% productivity
 
             // 2. Quality: Based on revision counts
