@@ -3,7 +3,7 @@
         {{-- Logo --}}
         <div style="text-align:center;margin-bottom:40px;">
             <h1 style="font-size:28px;font-weight:700;letter-spacing:-0.04em;color:var(--color-text);">
-                KPI <span style="color:var(--color-primary);">App</span>
+                RafaTax <span style="color:var(--color-primary);">KPI</span>
             </h1>
             <p style="margin-top:6px;font-size:14px;color:var(--color-text-secondary);">
                 Task Management & Performance Platform

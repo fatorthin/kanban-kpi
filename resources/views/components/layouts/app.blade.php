@@ -5,7 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="KPI App — Internal Task Management & Performance Platform">
-    <title>{{ config('app.name', 'KPI App') }}</title>
+    <title>{{ config('app.name', 'RafaTax KPI') }}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -16,7 +17,7 @@
         {{-- ============================================================ Sidebar --}}
         <aside class="sidebar" :class="{ 'mobile-open': mobileNavOpen }">
             <div class="sidebar-logo">
-                <h1>KPI <span>App</span></h1>
+                <h1>RafaTax <span>KPI</span></h1>
                 <button type="button" class="mobile-sidebar-close" @click="mobileNavOpen = false" aria-label="Close navigation menu">
                     <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
