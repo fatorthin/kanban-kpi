@@ -11,6 +11,7 @@ use App\Livewire\KpiReports\Index as KpiReportsIndex;
 use App\Livewire\ActivityLogs\Index as ActivityLogsIndex;
 use App\Livewire\Divisions\Index as DivisionsIndex;
 use App\Livewire\Manager\LoadMonitoring as LoadMonitoringIndex;
+use App\Livewire\GradeMultipliers\Index as GradeMultipliersIndex;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:director')->group(function () {
         Route::get('/activity-logs', ActivityLogsIndex::class)->name('activity-logs');
         Route::get('/divisions', DivisionsIndex::class)->name('divisions');
+        Route::get('/grade-multipliers', GradeMultipliersIndex::class)->name('grade-multipliers');
     });
 });
 

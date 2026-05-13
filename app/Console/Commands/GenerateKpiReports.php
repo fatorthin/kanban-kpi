@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\KpiReport;
+use App\Models\GradeMultiplier;
 use App\Models\Task;
 use App\Models\User;
 use Carbon\Carbon;
@@ -37,15 +38,7 @@ class GenerateKpiReports extends Command
             }
 
             // 1. Productivity: Sum of difficulty points * Client Grade Multiplier
-            $gradeMultipliers = [
-                'A' => 1.7, // Skor 7
-                'B' => 1.6, // Skor 6
-                'C' => 1.5, // Skor 5
-                'D' => 1.4, // Skor 4
-                'E' => 1.3, // Skor 3
-                'F' => 1.2, // Skor 2
-                'G' => 1.1  // Skor 1
-            ];
+            $gradeMultipliers = GradeMultiplier::pluck('multiplier', 'grade')->toArray();
 
             $totalPoints = $tasks->sum(function($task) use ($gradeMultipliers) {
                 $multiplier = $gradeMultipliers[$task->client?->grade] ?? 1.0;

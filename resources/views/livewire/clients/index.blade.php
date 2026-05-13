@@ -66,7 +66,7 @@
                 <div class="form-group">
                     <label class="form-label">Grade *</label>
                     <select class="form-select" wire:model="grade">
-                        @foreach(['A','B','C','D','E','F','G'] as $g)
+                        @foreach($grades as $g)
                             <option value="{{ $g }}">Grade {{ $g }}</option>
                         @endforeach
                     </select>

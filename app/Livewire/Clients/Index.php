@@ -3,6 +3,7 @@
 namespace App\Livewire\Clients;
 
 use App\Models\Client;
+use App\Models\GradeMultiplier;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -16,11 +17,15 @@ class Index extends Component
     public string $code    = '';
     public string $grade   = 'A';
 
-    protected array $rules = [
-        'name'  => 'required|string|max:255',
-        'code'  => 'required|string|max:50|unique:clients,code',
-        'grade' => 'required|in:A,B,C,D,E,F,G',
-    ];
+    protected function rules()
+    {
+        $grades = GradeMultiplier::pluck('grade')->toArray();
+        return [
+            'name'  => 'required|string|max:255',
+            'code'  => 'required|string|max:50|unique:clients,code' . ($this->editingId ? ',' . $this->editingId : ''),
+            'grade' => 'required|in:' . implode(',', $grades),
+        ];
+    }
 
     public function edit(int $id): void
     {
@@ -31,15 +36,9 @@ class Index extends Component
         $this->grade     = $client->grade;
         $this->showForm  = true;
     }
-
     public function save(): void
     {
-        $rules = $this->rules;
-        if ($this->editingId) {
-            $rules['code'] = 'required|string|max:50|unique:clients,code,' . $this->editingId;
-        }
-
-        $this->validate($rules);
+        $this->validate();
 
         $data = ['name' => $this->name, 'code' => $this->code, 'grade' => $this->grade];
 
@@ -64,6 +63,8 @@ class Index extends Component
               ->orWhere('code', 'like', '%' . $this->search . '%')
         )->withCount('tasks')->latest()->get();
 
-        return view('livewire.clients.index', compact('clients'));
+        $grades = GradeMultiplier::pluck('grade')->toArray();
+
+        return view('livewire.clients.index', compact('clients', 'grades'));
     }
 }
