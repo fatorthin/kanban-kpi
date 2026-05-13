@@ -238,6 +238,27 @@ class Board extends Component
         ]);
     }
 
+    public function deleteTask(int $taskId): void
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->isDirector()) {
+            return;
+        }
+
+        $task = \App\Models\Task::findOrFail($taskId);
+        $title = $task->title;
+        $task->delete();
+
+        activity()
+            ->useLog('task_activity')
+            ->causedBy($user)
+            ->performedOn($task)
+            ->log("Tugas \"{$title}\" telah dihapus oleh Director.");
+
+        $this->dispatch('notify', type: 'success', message: 'Task deleted successfully.');
+    }
+
     public function closeForm(): void
     {
         $this->reset([

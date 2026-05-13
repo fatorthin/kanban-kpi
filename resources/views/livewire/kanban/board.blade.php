@@ -194,6 +194,14 @@
                                     <button class="btn btn-secondary btn-sm" wire:click="moveTask({{ $task->id }}, 'Completed')">✓ Approve</button>
                                     <button class="btn btn-danger btn-sm" wire:click="moveTask({{ $task->id }}, 'Revision')">✗ Revision</button>
                                 @endif
+
+                                @if (auth()->user()->isDirector() && $task->status !== 'Completed')
+                                    <button class="btn btn-ghost btn-sm" style="color:var(--color-error);" 
+                                            wire:click="deleteTask({{ $task->id }})" 
+                                            wire:confirm="Hapus tugas ini secara permanen?">
+                                        🗑 Delete
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @empty

@@ -46,7 +46,11 @@ class Index extends Component
         $this->name      = $user->name;
         $this->positionName = $user->position_name ?? '';
         $this->email     = $user->email;
-        $this->whatsappNumber = $user->whatsapp_number ?? '';
+        $wa = $user->whatsapp_number ?? '';
+        if (str_starts_with($wa, '62')) {
+            $wa = substr($wa, 2);
+        }
+        $this->whatsappNumber = $wa;
         $this->role      = $user->roles->first()?->name ?? 'staff';
         $this->divisionId= $user->division_id;
         $this->managerId = $user->manager_id;

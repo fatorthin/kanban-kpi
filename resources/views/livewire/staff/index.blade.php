@@ -102,7 +102,10 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">No Whatsapp</label>
-                    <input type="text" class="form-input" wire:model="whatsappNumber" placeholder="e.g. 08123456789">
+                    <div style="display:flex;">
+                        <span style="background:var(--color-bg); border:1px solid var(--color-border); border-right:none; padding:10px 12px; border-radius:var(--radius-md) 0 0 var(--radius-md); font-size:14px; color:var(--color-neutral); font-weight:600; display:flex; align-items:center;">+62</span>
+                        <input type="text" class="form-input" style="border-top-left-radius:0; border-bottom-left-radius:0;" wire:model="whatsappNumber" placeholder="8123456789">
+                    </div>
                     @error('whatsappNumber')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
