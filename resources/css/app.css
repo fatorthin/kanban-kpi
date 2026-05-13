@@ -85,7 +85,8 @@ body {
 }
 
 .sidebar-logo {
-    padding: 24px 20px 16px;
+    height: 64px;
+    padding: 0 20px;
     border-bottom: 1px solid var(--color-border);
     display: flex;
     align-items: center;
@@ -189,7 +190,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 32px;
+    padding: 0 24px;
     position: sticky;
     top: 0;
     z-index: 40;
@@ -1283,7 +1284,10 @@ tr:hover td {
     }
     .topbar {
         padding: 0 12px;
-        height: 52px;
+        height: 64px;
+    }
+    .sidebar-logo {
+        height: 64px;
     }
     .topbar-right {
         gap: 6px;
