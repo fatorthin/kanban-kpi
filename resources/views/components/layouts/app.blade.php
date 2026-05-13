@@ -1,5 +1,18 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      x-data="{ 
+          darkMode: localStorage.getItem('darkMode') === 'true',
+          toggleDarkMode() {
+              this.darkMode = !this.darkMode;
+              localStorage.setItem('darkMode', this.darkMode);
+              if (this.darkMode) {
+                  document.documentElement.classList.add('dark');
+              } else {
+                  document.documentElement.classList.remove('dark');
+              }
+          }
+      }"
+      :class="{ 'dark': darkMode }">
 
 <head>
     <meta charset="utf-8">
@@ -9,6 +22,17 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <script>
+        function applyTheme() {
+            if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        applyTheme();
+        document.addEventListener('livewire:navigated', applyTheme);
+    </script>
 </head>
 
 <body>
@@ -140,6 +164,15 @@
                     <div class="topbar-division">
                         {{ auth()->user()->division?->name ?? 'No Division' }}
                     </div>
+
+                    <button type="button" @click="toggleDarkMode" class="btn btn-ghost btn-sm" style="width:38px;height:38px;border-radius:9999px;padding:0;border:1px solid var(--color-border);" title="Toggle Dark Mode">
+                        <svg x-show="!darkMode" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px;height:20px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                        </svg>
+                        <svg x-show="darkMode" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px;height:20px;display:none;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m9.75-9h-2.25m-13.5 0H3m15.364-6.364l-1.591 1.591M6.756 17.244l-1.591 1.591m12.728 0l-1.591-1.591M6.756 6.756L5.165 5.165M12 7.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9z" />
+                        </svg>
+                    </button>
 
                     @livewire('activity-notifications')
                 </div>
