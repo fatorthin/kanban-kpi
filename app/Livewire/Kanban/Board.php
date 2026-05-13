@@ -19,6 +19,8 @@ class Board extends Component
     public ?int $filterDivision = null;
     public string $filterType   = '';
     public string $search       = '';
+    public string $clientSearch = '';
+    public string $referenceSearch = '';
     
     public array $limits = [
         'New'         => 5,
@@ -27,6 +29,17 @@ class Board extends Component
         'Revision'    => 5,
         'Completed'   => 5,
     ];
+
+    public function mount(): void
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        
+        // Default to showing current user's tasks for Managers and Directors
+        if ($user->isManager() || $user->isDirector()) {
+            $this->filterPic = $user->id;
+        }
+    }
 
     public function loadMore(string $status): void
     {
@@ -219,10 +232,29 @@ class Board extends Component
             'formClientId',
             'formPicId',
             'formRefId',
-            'formDeadline'
+            'formDeadline',
+            'clientSearch',
+            'referenceSearch'
         ]);
     }
 
+    public function closeForm(): void
+    {
+        $this->reset([
+            'showForm',
+            'editingTaskId',
+            'formTitle',
+            'formDesc',
+            'formType',
+            'formPoints',
+            'formClientId',
+            'formPicId',
+            'formRefId',
+            'formDeadline',
+            'clientSearch',
+            'referenceSearch'
+        ]);
+    }
     public function updateTaskOrder(int $taskId, string $newStatus, array $newOrder): void
     {
         $task = Task::findOrFail($taskId);
@@ -270,7 +302,7 @@ class Board extends Component
             return in_array($newStatus, ['Completed', 'Revision']);
         }
 
-        if ($user->isStaff() && $task->pic_id === $user->id) {
+        if ($task->pic_id === $user->id) {
             $allowed = [
                 'New' => ['In_Progress'],
                 'In_Progress' => ['Review'],
@@ -295,18 +327,6 @@ class Board extends Component
                     ->whereDoesntHave('readStatuses', fn($readQuery) => $readQuery->where('user_id', $user->id)),
             ]);
 
-        if ($user->isStaff()) {
-            $query->where('pic_id', $user->id);
-        } elseif ($user->isManager()) {
-            $query->where(function ($q) use ($user) {
-                $q->where('manager_id', $user->id)
-                    ->orWhereHas('pic', fn($sq) => $sq->where('manager_id', $user->id));
-            });
-            if ($this->filterPic) {
-                $query->where('pic_id', $this->filterPic);
-            }
-        }
-        // Director sees all, with optional filters
         if ($user->isDirector()) {
             if ($this->filterDivision) {
                 $query->whereHas('pic', fn($q) => $q->where('division_id', $this->filterDivision));
@@ -314,6 +334,18 @@ class Board extends Component
             if ($this->filterPic) {
                 $query->where('pic_id', $this->filterPic);
             }
+        } elseif ($user->isManager()) {
+            $query->where(function ($q) use ($user) {
+                $q->where('manager_id', $user->id)
+                    ->orWhere('pic_id', $user->id)
+                    ->orWhereHas('pic', fn($sq) => $sq->where('manager_id', $user->id));
+            });
+            if ($this->filterPic) {
+                $query->where('pic_id', $this->filterPic);
+            }
+        } else {
+            // Default (Staff)
+            $query->where('pic_id', $user->id);
         }
 
         if ($this->filterType) {
@@ -351,8 +383,28 @@ class Board extends Component
             $staff->where('manager_id', $user->id);
         }
         $staff = $staff->get();
-        $clients    = Client::all();
-        $references = TaskReference::all();
+
+        // Ensure current user is in the list so they can filter by themselves (or assign to themselves)
+        if ($user->isManager() || $user->isDirector()) {
+            if (!$staff->contains('id', $user->id)) {
+                $staff->prepend($user);
+            }
+        }
+
+        $clients = Client::query()
+            ->when($this->clientSearch, function ($q) {
+                $q->where('name', 'like', '%' . $this->clientSearch . '%')
+                  ->orWhere('code', 'like', '%' . $this->clientSearch . '%');
+            })
+            ->limit(100) // Performance safeguard
+            ->get();
+        
+        $references = TaskReference::query()
+            ->when($this->referenceSearch, function ($q) {
+                $q->where('title', 'like', '%' . $this->referenceSearch . '%');
+            })
+            ->limit(100)
+            ->get();
 
         return view('livewire.kanban.board', compact('tasks', 'statuses', 'staff', 'clients', 'references', 'hasMore', 'totalCounts'));
     }

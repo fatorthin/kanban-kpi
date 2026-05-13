@@ -47,7 +47,7 @@
             <select class="form-select w-full-mobile" style="width:auto;" wire:model.live="filterPic">
                 <option value="">All Staff</option>
                 @foreach ($staff as $s)
-                    <option value="{{ $s->id }}">{{ $s->name }}</option>
+                    <option value="{{ $s->id }}">{{ $s->name }}{{ $s->id === auth()->id() ? ' (Me)' : '' }}</option>
                 @endforeach
             </select>
         @endif
@@ -223,22 +223,76 @@
 
     {{-- ================================================================ Create Task Modal --}}
     @if ($showForm)
-        <div class="modal-backdrop" wire:click.self="$set('showForm', false)">
+        <div class="modal-backdrop" wire:click.self="closeForm">
             <div class="modal" id="modal-create-task">
                 <div class="modal-header">
                     <h2 style="font-size:16px;font-weight:600;">{{ $editingTaskId ? 'Edit Task' : 'Create New Task' }}</h2>
-                    <button class="btn btn-ghost btn-sm" wire:click="$set('showForm', false)">✕</button>
+                    <button class="btn btn-ghost btn-sm" wire:click="closeForm">✕</button>
                 </div>
                 <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
                     {{-- Reference selector --}}
-                    <div class="form-group">
+                    <div class="form-group" x-data="{ open: false }" @click.away="open = false">
                         <label class="form-label">Task Reference (optional)</label>
-                        <select class="form-select" wire:model="formRefId" wire:change="loadReference($event.target.value)">
-                            <option value="">— Select from library —</option>
-                            @foreach ($references as $ref)
-                                <option value="{{ $ref->id }}">{{ $ref->title }}</option>
-                            @endforeach
-                        </select>
+                        <div style="position:relative;">
+                            {{-- Dropdown Trigger --}}
+                            <div @click="open = !open; if(open) setTimeout(() => $refs.refSearchInput.focus(), 100)" 
+                                 class="form-select" 
+                                 style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; background:var(--color-surface);">
+                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90%;">
+                                    @php $selectedRef = $references->firstWhere('id', $formRefId); @endphp
+                                    {{ $selectedRef ? $selectedRef->title : '— Select from library —' }}
+                                </span>
+                                <svg style="width:14px; height:14px; color:var(--color-neutral);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+
+                            {{-- Dropdown Content --}}
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                 x-transition:enter-end="opacity-100 transform scale-100"
+                                 style="position:absolute; top:100%; left:0; right:0; z-index:100; margin-top:4px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:var(--shadow-dropdown); padding:8px; display:none;"
+                                 :style="open ? 'display:block' : 'display:none'">
+                                
+                                {{-- Search Box --}}
+                                <div style="margin-bottom:8px; position:relative;">
+                                    <svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:var(--color-neutral);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input type="text" 
+                                           x-ref="refSearchInput"
+                                           class="form-input" 
+                                           placeholder="Search reference..." 
+                                           wire:model.live.debounce.300ms="referenceSearch"
+                                           style="height:34px; font-size:13px; padding-left:32px;">
+                                </div>
+
+                                {{-- Results List --}}
+                                <div style="max-height:200px; overflow-y:auto; margin:0 -4px; padding:0 4px;">
+                                    <div @click="$wire.set('formRefId', null); open = false;" 
+                                         class="dropdown-item" 
+                                         style="padding:8px 12px; font-size:13px; cursor:pointer; border-radius:var(--radius-sm); color:var(--color-text-secondary);">
+                                        — Select from library —
+                                    </div>
+                                    @foreach ($references as $ref)
+                                        <div @click="$wire.loadReference({{ $ref->id }}); $wire.set('formRefId', {{ $ref->id }}); open = false;" 
+                                             class="dropdown-item {{ $formRefId == $ref->id ? 'is-selected' : '' }}" 
+                                             style="padding:8px 12px; font-size:13px; cursor:pointer; border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center;">
+                                            <span style="font-weight:{{ $formRefId == $ref->id ? '600' : '400' }}; color:var(--color-text);">
+                                                {{ $ref->title }}
+                                            </span>
+                                        </div>
+                                    @endforeach
+
+                                    @if($references->isEmpty())
+                                        <div style="padding:16px; text-align:center; font-size:12px; color:var(--color-neutral);">
+                                            No references found
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Title *</label>
@@ -268,14 +322,70 @@
                         </div>
                     </div>
                     @if($formType === 'Client')
-                    <div class="form-group">
+                    <div class="form-group" x-data="{ open: false }" @click.away="open = false">
                         <label class="form-label">Client</label>
-                        <select class="form-select" wire:model="formClientId">
-                            <option value="">— Select Client —</option>
-                            @foreach ($clients as $client)
-                                <option value="{{ $client->id }}">{{ $client->name }} ({{ $client->code }})</option>
-                            @endforeach
-                        </select>
+                        <div style="position:relative;">
+                            {{-- Dropdown Trigger --}}
+                            <div @click="open = !open; if(open) setTimeout(() => $refs.clientSearchInput.focus(), 100)" 
+                                 class="form-select" 
+                                 style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; background:var(--color-surface);">
+                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90%;">
+                                    @php $selectedClient = $clients->firstWhere('id', $formClientId); @endphp
+                                    {{ $selectedClient ? $selectedClient->name : '— Select Client —' }}
+                                </span>
+                                <svg style="width:14px; height:14px; color:var(--color-neutral);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+
+                            {{-- Dropdown Content --}}
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                 x-transition:enter-end="opacity-100 transform scale-100"
+                                 style="position:absolute; top:100%; left:0; right:0; z-index:100; margin-top:4px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:var(--shadow-dropdown); padding:8px; display:none;"
+                                 :style="open ? 'display:block' : 'display:none'">
+                                
+                                {{-- Search Box inside dropdown --}}
+                                <div style="margin-bottom:8px; position:relative;">
+                                    <svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:var(--color-neutral);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input type="text" 
+                                           x-ref="clientSearchInput"
+                                           class="form-input" 
+                                           placeholder="Search client..." 
+                                           wire:model.live.debounce.300ms="clientSearch"
+                                           style="height:34px; font-size:13px; padding-left:32px;">
+                                </div>
+
+                                {{-- Results List --}}
+                                <div style="max-height:200px; overflow-y:auto; margin:0 -4px; padding:0 4px;">
+                                    <div @click="$wire.set('formClientId', null); open = false;" 
+                                         class="dropdown-item" 
+                                         style="padding:8px 12px; font-size:13px; cursor:pointer; border-radius:var(--radius-sm); color:var(--color-text-secondary);">
+                                        — Select Client —
+                                    </div>
+                                    @foreach ($clients as $client)
+                                        <div @click="$wire.set('formClientId', {{ $client->id }}); open = false;" 
+                                             class="dropdown-item {{ $formClientId == $client->id ? 'is-selected' : '' }}" 
+                                             style="padding:8px 12px; font-size:13px; cursor:pointer; border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center;">
+                                            <span style="font-weight:{{ $formClientId == $client->id ? '600' : '400' }}; color:var(--color-text);">
+                                                {{ $client->name }}
+                                            </span>
+                                            <span style="font-size:11px; color:var(--color-neutral);">{{ $client->code }}</span>
+                                        </div>
+                                    @endforeach
+
+                                    @if($clients->isEmpty())
+                                        <div style="padding:16px; text-align:center; font-size:12px; color:var(--color-neutral);">
+                                            No clients found
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @error('formClientId') <span class="form-error">{{ $message }}</span> @enderror
                     </div>
                     @endif
                     <div class="form-group">
@@ -283,7 +393,7 @@
                         <select class="form-select" wire:model="formPicId">
                             <option value="">— Select staff —</option>
                             @foreach ($staff as $s)
-                                <option value="{{ $s->id }}">{{ $s->name }}</option>
+                                <option value="{{ $s->id }}">{{ $s->name }}{{ $s->id === auth()->id() ? ' (Me)' : '' }}</option>
                             @endforeach
                         </select>
                         @error('formPicId')
@@ -299,7 +409,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary btn-md" wire:click="$set('showForm', false)">Cancel</button>
+                    <button class="btn btn-secondary btn-md" wire:click="closeForm">Cancel</button>
                     <button class="btn btn-primary btn-md" id="btn-save-task" wire:click="saveTask">Save Task</button>
                 </div>
             </div>
