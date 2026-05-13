@@ -42,7 +42,7 @@ class Index extends Component
         $this->role      = $user->roles->first()?->name ?? 'staff';
         $this->divisionId= $user->division_id;
         $this->managerId = $user->manager_id;
-        $this->pointRate = $user->base_point_rate;
+        $this->pointRate = (float) $user->base_point_rate;
         $this->showForm  = true;
     }
 

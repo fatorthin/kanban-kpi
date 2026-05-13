@@ -37,14 +37,18 @@ class TaskSlideOver extends Component
 
     public function editDeadline(): void
     {
-        if (! Auth::user()->isDirector()) return;
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (! $user->isDirector()) return;
         $this->newDeadline = $this->task->deadline->format('Y-m-d\TH:i');
         $this->isEditingDeadline = true;
     }
 
     public function saveDeadline(): void
     {
-        if (! Auth::user()->isDirector()) return;
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (! $user->isDirector()) return;
         $this->validate(['newDeadline' => 'required|date']);
 
         $oldDeadline = $this->task->deadline->format('d M Y, H:i');
@@ -52,7 +56,7 @@ class TaskSlideOver extends Component
         
         activity()
             ->useLog('task_activity')
-            ->causedBy(Auth::user())
+            ->causedBy($user)
             ->performedOn($this->task)
             ->log("Deadline tugas diubah dari {$oldDeadline} menjadi " . $this->task->deadline->format('d M Y, H:i'));
 
