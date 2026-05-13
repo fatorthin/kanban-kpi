@@ -17,6 +17,7 @@ class Index extends Component
     public string $search  = '';
     public string $name       = '';
     public string $email      = '';
+    public string $whatsappNumber = '';
     public string $password   = '';
     public string $role       = 'staff';
     public ?int $divisionId   = null;
@@ -26,6 +27,7 @@ class Index extends Component
     protected array $rules = [
         'name'       => 'required|string|max:255',
         'email'      => 'required|email|unique:users,email',
+        'whatsappNumber' => 'nullable|string|max:20',
         'password'   => 'nullable|min:8',
         'role'       => 'required|in:staff,manager,director',
         'divisionId' => 'nullable|exists:divisions,id',
@@ -39,6 +41,7 @@ class Index extends Component
         $this->editingId = $id;
         $this->name      = $user->name;
         $this->email     = $user->email;
+        $this->whatsappNumber = $user->whatsapp_number ?? '';
         $this->role      = $user->roles->first()?->name ?? 'staff';
         $this->divisionId= $user->division_id;
         $this->managerId = $user->manager_id;
@@ -57,6 +60,7 @@ class Index extends Component
         $data = [
             'name'            => $this->name,
             'email'           => $this->email,
+            'whatsapp_number' => $this->whatsappNumber,
             'division_id'     => $this->divisionId,
             'manager_id'      => $this->managerId,
             'base_point_rate' => $this->pointRate,
@@ -75,7 +79,7 @@ class Index extends Component
 
         $user->syncRoles([$this->role]);
 
-        $this->reset(['showForm', 'editingId', 'name', 'email', 'password', 'role', 'divisionId', 'managerId', 'pointRate']);
+        $this->reset(['showForm', 'editingId', 'name', 'email', 'whatsappNumber', 'password', 'role', 'divisionId', 'managerId', 'pointRate']);
     }
 
     public function render(): \Illuminate\View\View

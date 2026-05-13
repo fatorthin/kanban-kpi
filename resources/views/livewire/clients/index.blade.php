@@ -46,7 +46,7 @@
     </div>
 
     @if($showForm)
-    <div class="modal-backdrop" wire:click.self="$set('showForm', false)">
+    <div class="modal-backdrop">
         <div class="modal" id="modal-client-form">
             <div class="modal-header">
                 <h2 style="font-size:16px;font-weight:600;">{{ $editingId ? 'Edit Client' : 'New Client' }}</h2>

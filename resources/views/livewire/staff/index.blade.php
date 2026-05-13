@@ -17,10 +17,10 @@
                 <tr>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Whatsapp</th>
                     <th>Role</th>
                     <th>Division</th>
                     <th>Manager</th>
-                    <th>Point Rate</th>
                     <th style="width:100px;"></th>
                 </tr>
             </thead>
@@ -36,6 +36,7 @@
                         </div>
                     </td>
                     <td style="color:var(--color-text-secondary);">{{ $user->email }}</td>
+                    <td style="color:var(--color-text-secondary);">{{ $user->whatsapp_number ?? '—' }}</td>
                     <td>
                         @php $roleColors = ['director'=>'badge-revision','manager'=>'badge-review','staff'=>'badge-new']; @endphp
                         <span class="badge {{ $roleColors[$user->roles->first()?->name ?? 'staff'] ?? 'badge-new' }}">
@@ -50,7 +51,6 @@
                             —
                         @endif
                     </td>
-                    <td style="font-weight:500;">Rp {{ number_format($user->base_point_rate, 0, ',', '.') }}</td>
                     <td>
                         <div style="display:flex;gap:6px;">
                             <button class="btn btn-ghost btn-sm" wire:click="edit({{ $user->id }})">Edit</button>
@@ -65,7 +65,7 @@
     </div>
 
     @if($showForm)
-    <div class="modal-backdrop" wire:click.self="$set('showForm', false)">
+    <div class="modal-backdrop">
         <div class="modal" id="modal-staff-form">
             <div class="modal-header">
                 <h2 style="font-size:16px;font-weight:600;">{{ $editingId ? 'Edit User' : 'Add User' }}</h2>
@@ -81,6 +81,11 @@
                     <label class="form-label">Email *</label>
                     <input type="email" class="form-input" wire:model="email">
                     @error('email')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">No Whatsapp</label>
+                    <input type="text" class="form-input" wire:model="whatsappNumber" placeholder="e.g. 08123456789">
+                    @error('whatsappNumber')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password {{ $editingId ? '(leave blank to keep)' : '*' }}</label>
@@ -119,11 +124,6 @@
                     @error('managerId')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 @endif
-                <div class="form-group">
-                    <label class="form-label">Base Point Rate (Rp/point) *</label>
-                    <input type="number" class="form-input" wire:model="pointRate" min="0">
-                    @error('pointRate')<span class="form-error">{{ $message }}</span>@enderror
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary btn-md" wire:click="$set('showForm', false)">Cancel</button>

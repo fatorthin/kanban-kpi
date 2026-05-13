@@ -2,7 +2,7 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="page-title">KPI Reports</h1>
-            <p class="text-secondary text-sm mt-1">Monthly performance scores and incentive calculations.</p>
+            <p class="text-secondary text-sm mt-1">Monthly performance scores and ranking.</p>
         </div>
     </div>
 
@@ -51,7 +51,6 @@
                         <th>S_time</th>
                         <th>NAK Score</th>
                         <th>Load Points</th>
-                        <th>Incentive</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -71,9 +70,6 @@
                             </strong>
                         </td>
                         <td>{{ number_format($report->total_load_points) }}</td>
-                        <td style="font-weight:500;color:var(--color-success);">
-                            Rp {{ number_format($report->total_incentive, 0, ',', '.') }}
-                        </td>
                         <td>
                             <button class="btn btn-ghost btn-sm" wire:click="$set('selectedUserId', {{ $report->user_id }})">Detail</button>
                         </td>
@@ -113,12 +109,6 @@
                 <div style="text-align:center;">
                     <div style="font-size:24px;font-weight:700;letter-spacing:-0.03em;">{{ number_format($detail->total_load_points) }}</div>
                     <div class="text-sm text-secondary">Load Points</div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:24px;font-weight:700;letter-spacing:-0.03em;color:var(--color-success);">
-                        Rp {{ number_format($detail->total_incentive, 0, ',', '.') }}
-                    </div>
-                    <div class="text-sm text-secondary">Total Incentive</div>
                 </div>
             </div>
         </div>

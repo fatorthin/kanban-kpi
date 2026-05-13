@@ -19,6 +19,7 @@
                 <tr>
                     <th>Title</th>
                     <th>Type</th>
+                    <th>Division</th>
                     <th>Default Points</th>
                     <th style="width:100px;"></th>
                 </tr>
@@ -35,6 +36,7 @@
                         @endif
                     </td>
                     <td><span class="badge {{ $ref->task_type === 'Client' ? 'badge-new' : 'badge-progress' }}">{{ $ref->task_type }}</span></td>
+                    <td style="color:var(--color-text-secondary);">{{ $ref->division?->name ?? '—' }}</td>
                     <td><strong>{{ $ref->default_difficulty_points }}</strong> pts</td>
                     <td>
                         <div style="display:flex;gap:6px;">
@@ -44,7 +46,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="4" style="text-align:center;color:var(--color-neutral);padding:40px;">No task references found.</td></tr>
+                <tr><td colspan="5" style="text-align:center;color:var(--color-neutral);padding:40px;">No task references found.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -52,7 +54,7 @@
 
     {{-- Form Modal --}}
     @if($showForm)
-    <div class="modal-backdrop" wire:click.self="$set('showForm', false)">
+    <div class="modal-backdrop">
         <div class="modal" id="modal-task-ref-form">
             <div class="modal-header">
                 <h2 style="font-size:16px;font-weight:600;">{{ $editingId ? 'Edit Reference' : 'New Task Reference' }}</h2>
@@ -74,6 +76,15 @@
                         <select class="form-select" wire:model="type">
                             <option value="Client">Client</option>
                             <option value="Internal">Internal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Division</label>
+                        <select class="form-select" wire:model="divisionId">
+                            <option value="">— All Divisions —</option>
+                            @foreach($divisions as $div)
+                                <option value="{{ $div->id }}">{{ $div->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="form-group">

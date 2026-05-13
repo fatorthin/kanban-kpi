@@ -9,6 +9,7 @@ use App\Livewire\Clients\Index as ClientsIndex;
 use App\Livewire\Staff\Index as StaffIndex;
 use App\Livewire\KpiReports\Index as KpiReportsIndex;
 use App\Livewire\ActivityLogs\Index as ActivityLogsIndex;
+use App\Livewire\Divisions\Index as DivisionsIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -45,5 +46,6 @@ Route::middleware('auth')->group(function () {
     // Director only
     Route::middleware('role:director')->group(function () {
         Route::get('/activity-logs', ActivityLogsIndex::class)->name('activity-logs');
+        Route::get('/divisions', DivisionsIndex::class)->name('divisions');
     });
 });

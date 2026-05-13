@@ -10,7 +10,12 @@ class TaskReference extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'task_type', 'default_difficulty_points'];
+    protected $fillable = ['division_id', 'title', 'description', 'task_type', 'default_difficulty_points'];
+
+    public function division(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Division::class);
+    }
 
     public function tasks(): HasMany
     {

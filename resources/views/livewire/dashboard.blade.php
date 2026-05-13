@@ -1,5 +1,5 @@
 <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-responsive items-center justify-between mb-6">
         <div>
             <h1 class="page-title">Dashboard</h1>
             <p class="text-secondary text-sm mt-1">
@@ -52,7 +52,7 @@
             <div class="card-body">
                 @if($latestReport)
                     <div style="margin-bottom:20px;text-align:center;">
-                        <div style="font-size:48px;font-weight:700;letter-spacing:-0.04em;color:var(--color-text);">
+                        <div class="kpi-score-large">
                             {{ number_format($latestReport->final_kpi_score, 1) }}
                         </div>
                         <div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px;">NAK Score</div>
@@ -70,18 +70,15 @@
                     </div>
                     @endforeach
 
-                    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--color-border);display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-size:13px;color:var(--color-text-secondary);">Estimated Incentive</span>
-                        <span style="font-size:15px;font-weight:600;color:var(--color-success);">
-                            Rp {{ number_format($latestReport->total_incentive, 0, ',', '.') }}
-                        </span>
-                    </div>
                 @else
-                    <div style="text-align:center;padding:32px 0;color:var(--color-neutral);">
-                        <svg style="width:40px;height:40px;margin:0 auto 8px;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75Z"/>
-                        </svg>
-                        <p style="font-size:14px;">No KPI report yet for this month.</p>
+                    <div style="text-align:center;padding:40px 0;">
+                        <div style="width:56px;height:56px;border-radius:9999px;background:var(--color-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <svg style="width:24px;height:24px;color:var(--color-neutral);" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75Z"/>
+                            </svg>
+                        </div>
+                        <p style="font-size:14px;color:var(--color-text-secondary);font-weight:500;">No KPI report yet</p>
+                        <p style="font-size:12px;color:var(--color-neutral);margin-top:4px;">Check back later this month.</p>
                     </div>
                 @endif
             </div>
@@ -90,24 +87,24 @@
         {{-- ========================================= Recent Tasks --}}
         <div class="card">
             <div class="card-header">
-                <h3 style="font-size:15px;font-weight:600;">Recent Tasks</h3>
-                <a href="{{ route('kanban') }}" wire:navigate class="btn btn-ghost btn-sm">View Board →</a>
+                <h3 style="font-size:15px;font-weight:600;margin-right:auto;">Recent Tasks</h3>
+                <a href="{{ route('kanban') }}" wire:navigate class="btn btn-ghost btn-sm" style="padding:0 8px;white-space:nowrap;">View Board →</a>
             </div>
             <div class="card-body" style="padding:0;">
                 @forelse($recentTasks as $task)
-                <div style="padding:14px 24px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:12px;" class="{{ !$loop->last ? '' : 'border-0' }}">
+                <div class="list-item {{ !$loop->last ? '' : 'border-0' }}">
                     <div style="flex:1;min-width:0;">
-                        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        <div style="font-size:14px;font-weight:600;color:var(--color-text);line-height:1.4;">
                             {{ $task->title }}
                         </div>
-                        <div style="font-size:12px;color:var(--color-neutral);margin-top:2px;">
-                            {{ $task->client?->name ?? 'Internal' }} · {{ $task->pic?->name ?? '—' }}
+                        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px;">
+                            <span style="color:var(--color-primary);font-weight:500;">{{ $task->client?->name ?? 'Internal' }}</span> · {{ $task->pic?->name ?? '—' }}
                         </div>
                     </div>
                     @php
                         $badgeMap = ['New'=>'badge-new','In_Progress'=>'badge-progress','Review'=>'badge-review','Revision'=>'badge-revision','Completed'=>'badge-completed'];
                     @endphp
-                    <span class="badge {{ $badgeMap[$task->status] ?? '' }}">
+                    <span class="badge {{ $badgeMap[$task->status] ?? '' }}" style="flex-shrink:0;">
                         {{ str_replace('_', ' ', $task->status) }}
                     </span>
                 </div>

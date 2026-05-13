@@ -71,8 +71,6 @@
         ];
     @endphp
 
-    {{-- Load Sortable.js for Drag & Drop --}}
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
     <div class="kanban-board" x-data="{
         initSortable() {
@@ -223,7 +221,7 @@
 
     {{-- ================================================================ Create Task Modal --}}
     @if ($showForm)
-        <div class="modal-backdrop" wire:click.self="closeForm">
+        <div class="modal-backdrop">
             <div class="modal" id="modal-create-task">
                 <div class="modal-header">
                     <h2 style="font-size:16px;font-weight:600;">{{ $editingTaskId ? 'Edit Task' : 'Create New Task' }}</h2>
@@ -418,7 +416,7 @@
 
     {{-- ================================================================ Takeover Modal --}}
     @if ($showTakeoverModal)
-        <div class="modal-backdrop" wire:click.self="$set('showTakeoverModal', false)">
+        <div class="modal-backdrop">
             <div class="modal" style="max-width:400px;">
                 <div class="modal-header">
                     <h2 style="font-size:16px;font-weight:600;">Takeover & Reassign</h2>

@@ -3,6 +3,7 @@
 namespace App\Livewire\TaskLibrary;
 
 use App\Models\TaskReference;
+use App\Models\Division;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -15,12 +16,14 @@ class Index extends Component
     public string $title     = '';
     public string $desc      = '';
     public string $type      = 'Client';
+    public ?int $divisionId  = null;
     public int $points       = 0;
 
     protected array $rules = [
         'title'  => 'required|string|max:255',
         'desc'   => 'nullable|string',
         'type'   => 'required|in:Client,Internal',
+        'divisionId' => 'nullable|exists:divisions,id',
         'points' => 'required|integer|min:0',
     ];
 
@@ -31,6 +34,7 @@ class Index extends Component
         $this->title   = $ref->title;
         $this->desc    = $ref->description ?? '';
         $this->type    = $ref->task_type;
+        $this->divisionId = $ref->division_id;
         $this->points  = $ref->default_difficulty_points;
         $this->showForm = true;
     }
@@ -43,6 +47,7 @@ class Index extends Component
             'title'                    => $this->title,
             'description'              => $this->desc,
             'task_type'                => $this->type,
+            'division_id'              => $this->divisionId,
             'default_difficulty_points'=> $this->points,
         ];
 
@@ -52,7 +57,7 @@ class Index extends Component
             TaskReference::create($data);
         }
 
-        $this->reset(['showForm', 'editingId', 'title', 'desc', 'type', 'points']);
+        $this->reset(['showForm', 'editingId', 'title', 'desc', 'type', 'divisionId', 'points']);
     }
 
     public function delete(int $id): void
@@ -62,10 +67,14 @@ class Index extends Component
 
     public function render(): \Illuminate\View\View
     {
-        $refs = TaskReference::when($this->search, fn ($q) =>
+        $refs = TaskReference::with('division')
+            ->when($this->search, fn ($q) =>
             $q->where('title', 'like', '%' . $this->search . '%')
         )->latest()->get();
 
-        return view('livewire.task-library.index', compact('refs'));
+        return view('livewire.task-library.index', [
+            'refs' => $refs,
+            'divisions' => Division::all(),
+        ]);
     }
 }
