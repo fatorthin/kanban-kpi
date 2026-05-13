@@ -63,11 +63,21 @@ class Index extends Component
         }
         $this->validate($rules);
 
+        $wa = $this->whatsappNumber;
+        if ($wa) {
+            $wa = preg_replace('/[^0-9]/', '', $wa); // strip non-digits
+            if (str_starts_with($wa, '0')) {
+                $wa = '62' . substr($wa, 1);
+            } elseif (!str_starts_with($wa, '62')) {
+                $wa = '62' . $wa;
+            }
+        }
+
         $data = [
             'name'            => $this->name,
             'position_name'   => $this->positionName,
             'email'           => $this->email,
-            'whatsapp_number' => $this->whatsappNumber,
+            'whatsapp_number' => $wa,
             'division_id'     => $this->divisionId,
             'manager_id'      => $this->managerId,
             'is_active'       => $this->isActive,

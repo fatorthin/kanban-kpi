@@ -10,6 +10,7 @@ use App\Livewire\Staff\Index as StaffIndex;
 use App\Livewire\KpiReports\Index as KpiReportsIndex;
 use App\Livewire\ActivityLogs\Index as ActivityLogsIndex;
 use App\Livewire\Divisions\Index as DivisionsIndex;
+use App\Livewire\Manager\LoadMonitoring as LoadMonitoringIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:manager|director')->group(function () {
         Route::get('/task-library', TaskLibraryIndex::class)->name('task-library');
         Route::get('/clients', ClientsIndex::class)->name('clients');
+        Route::get('/load-monitoring', LoadMonitoringIndex::class)->name('load-monitoring');
     });
 
     // User Management (Director only)
