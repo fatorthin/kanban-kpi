@@ -15,12 +15,13 @@
         <table>
             <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>Name & Position</th>
                     <th>Email</th>
                     <th>Whatsapp</th>
                     <th>Role</th>
                     <th>Division</th>
                     <th>Manager</th>
+                    <th>Status</th>
                     <th style="width:100px;"></th>
                 </tr>
             </thead>
@@ -32,7 +33,10 @@
                             <div style="width:32px;height:32px;border-radius:9999px;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">
                                 {{ strtoupper(substr($user->name, 0, 2)) }}
                             </div>
-                            <span style="font-weight:500;">{{ $user->name }}</span>
+                            <div style="flex:1;">
+                                <div style="font-weight:500;">{{ $user->name }}</div>
+                                <div style="font-size:11px;color:var(--color-text-secondary);">{{ $user->position_name ?? '—' }}</div>
+                            </div>
                         </div>
                     </td>
                     <td style="color:var(--color-text-secondary);">{{ $user->email }}</td>
@@ -52,13 +56,20 @@
                         @endif
                     </td>
                     <td>
+                        <button wire:click="toggleActive({{ $user->id }})" 
+                                class="badge {{ $user->is_active ? 'badge-completed' : 'badge-revision' }}"
+                                style="border:none; cursor:pointer;">
+                            {{ $user->is_active ? 'Active' : 'Inactive' }}
+                        </button>
+                    </td>
+                    <td>
                         <div style="display:flex;gap:6px;">
                             <button class="btn btn-ghost btn-sm" wire:click="edit({{ $user->id }})">Edit</button>
                         </div>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" style="text-align:center;color:var(--color-neutral);padding:40px;">No users found.</td></tr>
+                <tr><td colspan="7" style="text-align:center;color:var(--color-neutral);padding:40px;">No users found.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -72,10 +83,17 @@
                 <button class="btn btn-ghost btn-sm" wire:click="$set('showForm', false)">✕</button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Name *</label>
-                    <input type="text" class="form-input" wire:model="name">
-                    @error('name')<span class="form-error">{{ $message }}</span>@enderror
+                <div class="responsive-grid grid-cols-1 md:grid-cols-2" style="gap:12px;">
+                    <div class="form-group">
+                        <label class="form-label">Name *</label>
+                        <input type="text" class="form-input" wire:model="name">
+                        @error('name')<span class="form-error">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Position Name</label>
+                        <input type="text" class="form-input" wire:model="positionName" placeholder="e.g. Senior Accountant">
+                        @error('positionName')<span class="form-error">{{ $message }}</span>@enderror
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email *</label>
@@ -124,6 +142,13 @@
                     @error('managerId')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 @endif
+
+                <div class="form-group">
+                    <label class="flex items-center gap-2" style="cursor:pointer;">
+                        <input type="checkbox" wire:model="isActive">
+                        <span class="form-label" style="margin:0;">User is Active</span>
+                    </label>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary btn-md" wire:click="$set('showForm', false)">Cancel</button>

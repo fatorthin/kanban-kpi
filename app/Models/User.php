@@ -17,9 +17,11 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 
+        'position_name',
         'email', 
         'whatsapp_number',
         'password', 
+        'is_active',
         'division_id', 
         'manager_id',
         'base_point_rate', 
@@ -37,6 +39,7 @@ class User extends Authenticatable
         return [
             'email_verified_at'      => 'datetime',
             'password'               => 'hashed',
+            'is_active'              => 'boolean',
             'base_point_rate'        => 'decimal:2',
             'notifications_read_at'  => 'datetime',
         ];

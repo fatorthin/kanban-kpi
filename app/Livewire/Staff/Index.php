@@ -16,16 +16,19 @@ class Index extends Component
     public ?int $editingId = null;
     public string $search  = '';
     public string $name       = '';
+    public string $positionName = '';
     public string $email      = '';
     public string $whatsappNumber = '';
     public string $password   = '';
     public string $role       = 'staff';
     public ?int $divisionId   = null;
     public ?int $managerId    = null;
+    public bool $isActive     = true;
     public float $pointRate   = 0;
 
     protected array $rules = [
         'name'       => 'required|string|max:255',
+        'positionName' => 'nullable|string|max:255',
         'email'      => 'required|email|unique:users,email',
         'whatsappNumber' => 'nullable|string|max:20',
         'password'   => 'nullable|min:8',
@@ -33,6 +36,7 @@ class Index extends Component
         'divisionId' => 'nullable|exists:divisions,id',
         'managerId'  => 'nullable|exists:users,id',
         'pointRate'  => 'required|numeric|min:0',
+        'isActive'   => 'boolean',
     ];
 
     public function edit(int $id): void
@@ -40,11 +44,13 @@ class Index extends Component
         $user            = User::findOrFail($id);
         $this->editingId = $id;
         $this->name      = $user->name;
+        $this->positionName = $user->position_name ?? '';
         $this->email     = $user->email;
         $this->whatsappNumber = $user->whatsapp_number ?? '';
         $this->role      = $user->roles->first()?->name ?? 'staff';
         $this->divisionId= $user->division_id;
         $this->managerId = $user->manager_id;
+        $this->isActive  = (bool) $user->is_active;
         $this->pointRate = (float) $user->base_point_rate;
         $this->showForm  = true;
     }
@@ -59,10 +65,12 @@ class Index extends Component
 
         $data = [
             'name'            => $this->name,
+            'position_name'   => $this->positionName,
             'email'           => $this->email,
             'whatsapp_number' => $this->whatsappNumber,
             'division_id'     => $this->divisionId,
             'manager_id'      => $this->managerId,
+            'is_active'       => $this->isActive,
             'base_point_rate' => $this->pointRate,
         ];
 
@@ -79,7 +87,14 @@ class Index extends Component
 
         $user->syncRoles([$this->role]);
 
-        $this->reset(['showForm', 'editingId', 'name', 'email', 'whatsappNumber', 'password', 'role', 'divisionId', 'managerId', 'pointRate']);
+        $this->reset(['showForm', 'editingId', 'name', 'positionName', 'email', 'whatsappNumber', 'password', 'role', 'divisionId', 'managerId', 'pointRate', 'isActive']);
+    }
+
+    public function toggleActive(int $id): void
+    {
+        $user = User::findOrFail($id);
+        $user->update(['is_active' => !$user->is_active]);
+        $this->dispatch('notify', type: 'success', message: 'User status updated.');
     }
 
     public function render(): \Illuminate\View\View
