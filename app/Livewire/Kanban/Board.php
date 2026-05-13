@@ -21,7 +21,7 @@ class Board extends Component
     public string $search       = '';
     public string $clientSearch = '';
     public string $referenceSearch = '';
-    
+
     public array $limits = [
         'New'         => 5,
         'In_Progress' => 5,
@@ -34,7 +34,7 @@ class Board extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        
+
         // Default to showing current user's tasks for Managers and Directors
         if ($user->isManager() || $user->isDirector()) {
             $this->filterPic = $user->id;
@@ -246,7 +246,7 @@ class Board extends Component
             return;
         }
 
-        $task = \App\Models\Task::findOrFail($taskId);
+        $task = Task::findOrFail($taskId);
         $title = $task->title;
         $task->delete();
 
@@ -395,7 +395,7 @@ class Board extends Component
                 ->orderBy('id', 'desc')
                 ->limit($this->limits[$status])
                 ->get();
-            
+
             $hasMore[$status] = $totalCounts[$status] > $this->limits[$status];
         }
 
@@ -415,11 +415,11 @@ class Board extends Component
         $clients = Client::query()
             ->when($this->clientSearch, function ($q) {
                 $q->where('name', 'like', '%' . $this->clientSearch . '%')
-                  ->orWhere('code', 'like', '%' . $this->clientSearch . '%');
+                    ->orWhere('code', 'like', '%' . $this->clientSearch . '%');
             })
             ->limit(100) // Performance safeguard
             ->get();
-        
+
         $references = TaskReference::query()
             ->when($this->referenceSearch, function ($q) {
                 $q->where('title', 'like', '%' . $this->referenceSearch . '%');
