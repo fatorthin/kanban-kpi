@@ -4,6 +4,7 @@ namespace App\Livewire\KpiReports;
 
 use App\Models\KpiReport;
 use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -19,6 +20,20 @@ class Index extends Component
     {
         $this->month = (int) now()->format('m');
         $this->year  = (int) now()->format('Y');
+    }
+
+    public function generateReports(): void
+    {
+        if (!Auth::user()->isDirector()) {
+            return;
+        }
+
+        Artisan::call('kpi:generate', [
+            'month' => $this->month,
+            'year'  => $this->year,
+        ]);
+
+        $this->dispatch('notify', type: 'success', message: 'KPI reports generated for ' . $this->month . '/' . $this->year);
     }
 
     public function render(): \Illuminate\View\View

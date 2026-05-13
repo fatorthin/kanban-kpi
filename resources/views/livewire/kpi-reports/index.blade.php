@@ -4,6 +4,12 @@
             <h1 class="page-title">KPI Reports</h1>
             <p class="text-secondary text-sm mt-1">Monthly performance scores and ranking.</p>
         </div>
+        @if(auth()->user()->isDirector())
+            <button class="btn btn-primary btn-md w-full-mobile" wire:click="generateReports" wire:loading.attr="disabled">
+                <span wire:loading.remove>⚡ Generate for Selected Period</span>
+                <span wire:loading>Processing...</span>
+            </button>
+        @endif
     </div>
 
     {{-- Period selector --}}
