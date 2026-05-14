@@ -4,11 +4,13 @@ namespace App\Livewire\ActivityLogs;
 
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Spatie\Activitylog\Models\Activity;
 
 #[Layout('components.layouts.app')]
 class Index extends Component
 {
+    use WithPagination;
     public string $search = '';
 
     public function render(): \Illuminate\View\View

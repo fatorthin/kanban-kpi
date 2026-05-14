@@ -22,7 +22,7 @@ class LoadMonitoring extends Component
             }]);
 
         if (!$user->isDirector()) {
-            $query->where('manager_id', $user->id);
+            $query->whereHas('managers', fn($q) => $q->where('manager_id', $user->id));
         }
 
         $staff = $query->get()

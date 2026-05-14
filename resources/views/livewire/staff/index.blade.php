@@ -49,8 +49,8 @@
                     </td>
                     <td style="color:var(--color-text-secondary);">{{ $user->division?->name ?? '—' }}</td>
                     <td style="color:var(--color-text-secondary);">
-                        @if($user->roles->first()?->name === 'staff')
-                            {{ $user->manager?->name ?? '—' }}
+                        @if($user->hasRole('staff'))
+                            {{ $user->managers->pluck('name')->implode(', ') ?: '—' }}
                         @else
                             —
                         @endif
@@ -135,14 +135,16 @@
 
                 @if($role === 'staff')
                 <div class="form-group">
-                    <label class="form-label">Assigned Manager</label>
-                    <select class="form-select" wire:model="managerId">
-                        <option value="">— No Manager —</option>
+                    <label class="form-label">Assigned Managers</label>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; background: var(--color-bg); padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); max-height: 150px; overflow-y: auto;">
                         @foreach($managers as $m)
-                            <option value="{{ $m->id }}">{{ $m->name }}</option>
+                            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                                <input type="checkbox" wire:model="managerIds" value="{{ $m->id }}">
+                                <span>{{ $m->name }}</span>
+                            </label>
                         @endforeach
-                    </select>
-                    @error('managerId')<span class="form-error">{{ $message }}</span>@enderror
+                    </div>
+                    @error('managerIds')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 @endif
 

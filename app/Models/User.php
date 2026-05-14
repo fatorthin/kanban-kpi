@@ -55,6 +55,16 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'manager_id');
     }
 
+    public function managers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'manager_staff', 'staff_id', 'manager_id')->withTimestamps();
+    }
+
+    public function staffs(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'manager_staff', 'manager_id', 'staff_id')->withTimestamps();
+    }
+
     public function subordinates(): HasMany
     {
         return $this->hasMany(User::class, 'manager_id');

@@ -359,7 +359,7 @@ class Board extends Component
             $query->where(function ($q) use ($user) {
                 $q->where('manager_id', $user->id)
                     ->orWhere('pic_id', $user->id)
-                    ->orWhereHas('pic', fn($sq) => $sq->where('manager_id', $user->id));
+                    ->orWhereHas('pic', fn($sq) => $sq->whereHas('managers', fn($mq) => $mq->where('manager_id', $user->id)));
             });
             if ($this->filterPic) {
                 $query->where('pic_id', $this->filterPic);
@@ -401,7 +401,7 @@ class Board extends Component
 
         $staff = User::role('staff');
         if ($user->isManager()) {
-            $staff->where('manager_id', $user->id);
+            $staff->whereHas('managers', fn($q) => $q->where('manager_id', $user->id));
         }
         $staff = $staff->get();
 

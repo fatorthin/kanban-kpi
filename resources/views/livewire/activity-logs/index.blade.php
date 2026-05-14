@@ -74,7 +74,5 @@
         </table>
     </div>
 
-    <div style="margin-top:20px;">
-        {{ $logs->links(data: ['scrollTo' => false]) }}
-    </div>
+    {{ $logs->links('livewire.pagination-links', data: ['scrollTo' => false]) }}
 </div>

@@ -22,7 +22,7 @@ class Index extends Component
     public string $password   = '';
     public string $role       = 'staff';
     public ?int $divisionId   = null;
-    public ?int $managerId    = null;
+    public array $managerIds  = [];
     public bool $isActive     = true;
     public float $pointRate   = 0;
 
@@ -34,7 +34,8 @@ class Index extends Component
         'password'   => 'nullable|min:8',
         'role'       => 'required|in:staff,manager,director',
         'divisionId' => 'nullable|exists:divisions,id',
-        'managerId'  => 'nullable|exists:users,id',
+        'managerIds' => 'nullable|array',
+        'managerIds.*' => 'exists:users,id',
         'pointRate'  => 'required|numeric|min:0',
         'isActive'   => 'boolean',
     ];
@@ -53,7 +54,7 @@ class Index extends Component
         $this->whatsappNumber = $wa;
         $this->role      = $user->roles->first()?->name ?? 'staff';
         $this->divisionId= $user->division_id;
-        $this->managerId = $user->manager_id;
+        $this->managerIds = $user->managers->pluck('id')->toArray();
         $this->isActive  = (bool) $user->is_active;
         $this->pointRate = (float) $user->base_point_rate;
         $this->showForm  = true;
@@ -83,7 +84,7 @@ class Index extends Component
             'email'           => $this->email,
             'whatsapp_number' => $wa,
             'division_id'     => $this->divisionId,
-            'manager_id'      => $this->managerId,
+            'manager_id'      => $this->managerIds[0] ?? null, // Keep for backward compatibility
             'is_active'       => $this->isActive,
             'base_point_rate' => $this->pointRate,
         ];
@@ -100,8 +101,9 @@ class Index extends Component
         }
 
         $user->syncRoles([$this->role]);
+        $user->managers()->sync($this->managerIds);
 
-        $this->reset(['showForm', 'editingId', 'name', 'positionName', 'email', 'whatsappNumber', 'password', 'role', 'divisionId', 'managerId', 'pointRate', 'isActive']);
+        $this->reset(['showForm', 'editingId', 'name', 'positionName', 'email', 'whatsappNumber', 'password', 'role', 'divisionId', 'managerIds', 'pointRate', 'isActive']);
     }
 
     public function toggleActive(int $id): void
@@ -113,7 +115,7 @@ class Index extends Component
 
     public function render(): \Illuminate\View\View
     {
-        $users = User::with(['division', 'roles', 'manager'])
+        $users = User::with(['division', 'roles', 'managers'])
             ->when($this->search, fn ($q) =>
                 $q->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('email', 'like', '%' . $this->search . '%')
