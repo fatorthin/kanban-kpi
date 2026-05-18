@@ -356,10 +356,20 @@ class Board extends Component
                 $query->where('pic_id', $this->filterPic);
             }
         } elseif ($user->isManager()) {
-            $query->where(function ($q) use ($user) {
+            $directSubordinateIds = \Illuminate\Support\Facades\DB::table('manager_staff')
+                ->where('manager_id', $user->id)
+                ->pluck('staff_id');
+
+            $indirectSubordinateIds = \Illuminate\Support\Facades\DB::table('manager_staff')
+                ->whereIn('manager_id', $directSubordinateIds)
+                ->pluck('staff_id');
+
+            $allSubordinateIds = $directSubordinateIds->concat($indirectSubordinateIds)->unique();
+
+            $query->where(function ($q) use ($user, $allSubordinateIds) {
                 $q->where('manager_id', $user->id)
                     ->orWhere('pic_id', $user->id)
-                    ->orWhereHas('pic', fn($sq) => $sq->whereHas('managers', fn($mq) => $mq->where('manager_id', $user->id)));
+                    ->orWhereIn('pic_id', $allSubordinateIds);
             });
             if ($this->filterPic) {
                 $query->where('pic_id', $this->filterPic);
@@ -399,11 +409,21 @@ class Board extends Component
             $hasMore[$status] = $totalCounts[$status] > $this->limits[$status];
         }
 
-        $staff = User::role('staff');
-        if ($user->isManager()) {
-            $staff->whereHas('managers', fn($q) => $q->where('manager_id', $user->id));
+        if ($user->isDirector()) {
+            $staff = User::all();
+        } elseif ($user->isManager()) {
+            $directSubordinateIds = \Illuminate\Support\Facades\DB::table('manager_staff')
+                ->where('manager_id', $user->id)
+                ->pluck('staff_id');
+            $indirectSubordinateIds = \Illuminate\Support\Facades\DB::table('manager_staff')
+                ->whereIn('manager_id', $directSubordinateIds)
+                ->pluck('staff_id');
+            $allSubordinateIds = $directSubordinateIds->concat($indirectSubordinateIds)->unique();
+
+            $staff = User::whereIn('id', $allSubordinateIds)->get();
+        } else {
+            $staff = collect();
         }
-        $staff = $staff->get();
 
         // Ensure current user is in the list so they can filter by themselves (or assign to themselves)
         if ($user->isManager() || $user->isDirector()) {

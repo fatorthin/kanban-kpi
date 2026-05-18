@@ -16,13 +16,21 @@ class LoadMonitoring extends Component
         $user = Auth::user();
         
         // Get staff members with their current active tasks load
-        $query = User::role('staff')
+        $query = User::query()
             ->with(['assignedTasks' => function($query) {
                 $query->whereNotIn('status', ['Completed', 'Canceled']);
             }]);
 
         if (!$user->isDirector()) {
-            $query->whereHas('managers', fn($q) => $q->where('manager_id', $user->id));
+            $directSubordinateIds = \Illuminate\Support\Facades\DB::table('manager_staff')
+                ->where('manager_id', $user->id)
+                ->pluck('staff_id');
+            $indirectSubordinateIds = \Illuminate\Support\Facades\DB::table('manager_staff')
+                ->whereIn('manager_id', $directSubordinateIds)
+                ->pluck('staff_id');
+            $allSubordinateIds = $directSubordinateIds->concat($indirectSubordinateIds)->unique();
+
+            $query->whereIn('id', $allSubordinateIds);
         }
 
         $staff = $query->get()

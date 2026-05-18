@@ -69,11 +69,27 @@ class Index extends Component
 
     public function render(): \Illuminate\View\View
     {
+        $user = Auth::user();
+        if ($user->isDirector()) {
+            $staff = User::all();
+        } elseif ($user->isManager()) {
+            $directSubordinateIds = \Illuminate\Support\Facades\DB::table('manager_staff')
+                ->where('manager_id', $user->id)
+                ->pluck('staff_id');
+            $indirectSubordinateIds = \Illuminate\Support\Facades\DB::table('manager_staff')
+                ->whereIn('manager_id', $directSubordinateIds)
+                ->pluck('staff_id');
+            $allSubordinateIds = $directSubordinateIds->concat($indirectSubordinateIds)->unique();
+            $staff = User::whereIn('id', $allSubordinateIds)->get();
+        } else {
+            $staff = collect();
+        }
+
         return view('livewire.recurring-tasks.index', [
             'recurringTasks' => RecurringTask::with(['taskReference', 'pic', 'client'])->get(),
             'references'     => TaskReference::all(),
             'clients'        => Client::all(),
-            'staff'          => User::role('staff')->get(),
+            'staff'          => $staff,
         ]);
     }
 }

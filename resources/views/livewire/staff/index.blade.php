@@ -49,7 +49,7 @@
                     </td>
                     <td style="color:var(--color-text-secondary);">{{ $user->division?->name ?? '—' }}</td>
                     <td style="color:var(--color-text-secondary);">
-                        @if($user->hasRole('staff'))
+                        @if($user->hasAnyRole(['staff', 'manager']))
                             {{ $user->managers->pluck('name')->implode(', ') ?: '—' }}
                         @else
                             —
@@ -133,15 +133,17 @@
                     </div>
                 </div>
 
-                @if($role === 'staff')
+                @if(in_array($role, ['staff', 'manager']))
                 <div class="form-group">
                     <label class="form-label">Assigned Managers</label>
                     <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; background: var(--color-bg); padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); max-height: 150px; overflow-y: auto;">
                         @foreach($managers as $m)
+                            @if($m->id !== $editingId)
                             <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                                 <input type="checkbox" wire:model="managerIds" value="{{ $m->id }}">
                                 <span>{{ $m->name }}</span>
                             </label>
+                            @endif
                         @endforeach
                     </div>
                     @error('managerIds')<span class="form-error">{{ $message }}</span>@enderror
