@@ -425,6 +425,7 @@ class Board extends Component
             $staff = collect();
         }
 
+        /** @var \Illuminate\Support\Collection<int, \App\Models\User>|\Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $staff */
         // Ensure current user is in the list so they can filter by themselves (or assign to themselves)
         if ($user->isManager() || $user->isDirector()) {
             if (!$staff->contains('id', $user->id)) {
