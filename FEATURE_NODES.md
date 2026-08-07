@@ -131,6 +131,20 @@ graph TD
 
 ---
 
+### 📍 Node 10: WhatsApp Gateway Engine (`N10_WA_GATEWAY`)
+- **Primary Models & Services:** `App\Models\Setting`, `App\Services\WhatsAppService`
+- **Gateway Engine Integration:** `aldinokemal/go-whatsapp-web-multidevice` (v9.0.0 REST API)
+- **Livewire Settings Component:**
+  - `App\Livewire\Settings\WhatsAppGateway` ([routes/web.php](file:///d:/laragon/www/kanban-kpi/routes/web.php#L60))
+- **Key Business Logic:**
+  - Restricted exclusively to `role:director`.
+  - Dynamic key-value configuration (`settings` table) overriding `.env` defaults.
+  - Server connection Health Check & Live Status.
+  - Dual Reconnect Options: **Scan QR Code** & **8-Digit Pairing Code**.
+  - Test Message Delivery Engine with automatic Indonesian phone number formatting (`08xx` $\rightarrow$ `628xx`).
+
+---
+
 
 ## 3. UI/UX Design System Rules (Genesis Specs)
 
