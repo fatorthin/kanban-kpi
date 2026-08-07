@@ -13,3 +13,7 @@ Schedule::command('recurring:process')->daily();
 
 // Schedule for KPI Reports (1st of every month at midnight)
 Schedule::command('kpi:generate')->monthlyOn(1, '00:00');
+
+// Schedule for Subjective Performance Evaluation (25th of every month at midnight)
+Schedule::command('subjective-eval:generate')->monthlyOn(25, '00:00');
+

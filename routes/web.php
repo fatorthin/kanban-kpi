@@ -12,6 +12,9 @@ use App\Livewire\ActivityLogs\Index as ActivityLogsIndex;
 use App\Livewire\Divisions\Index as DivisionsIndex;
 use App\Livewire\Manager\LoadMonitoring as LoadMonitoringIndex;
 use App\Livewire\GradeMultipliers\Index as GradeMultipliersIndex;
+use App\Livewire\SubjectiveEvaluations\Index as SubjectiveEvaluationsIndex;
+use App\Livewire\SubjectiveEvaluations\Form as SubjectiveEvaluationsForm;
+use App\Livewire\SubjectiveEvaluations\Indicators as SubjectiveEvaluationsIndicators;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +40,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/task-library', TaskLibraryIndex::class)->name('task-library');
         Route::get('/clients', ClientsIndex::class)->name('clients');
         Route::get('/load-monitoring', LoadMonitoringIndex::class)->name('load-monitoring');
+        Route::get('/subjective-evaluations/indicators', SubjectiveEvaluationsIndicators::class)->name('subjective-evaluations.indicators');
     });
 
     // User Management (Director only)
@@ -46,6 +50,8 @@ Route::middleware('auth')->group(function () {
 
     // Reports (all authenticated)
     Route::get('/kpi-reports', KpiReportsIndex::class)->name('kpi-reports');
+    Route::get('/subjective-evaluations', SubjectiveEvaluationsIndex::class)->name('subjective-evaluations.index');
+    Route::get('/subjective-evaluations/{id}', SubjectiveEvaluationsForm::class)->name('subjective-evaluations.show');
 
     // Director only
     Route::middleware('role:director')->group(function () {
@@ -60,3 +66,9 @@ Route::get('/cron/process-recurring-tasks', function () {
     Artisan::call('recurring:process');
     return response()->json(['status' => 'success', 'output' => Artisan::output()]);
 });
+
+Route::get('/cron/generate-subjective-evaluations', function () {
+    Artisan::call('subjective-eval:generate');
+    return response()->json(['status' => 'success', 'output' => Artisan::output()]);
+});
+
