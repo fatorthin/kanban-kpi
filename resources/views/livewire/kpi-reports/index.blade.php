@@ -52,9 +52,10 @@
                     <tr>
                         <th>#</th>
                         <th>Staff</th>
-                        <th>S_prod</th>
-                        <th>S_qual</th>
-                        <th>S_time</th>
+                        <th>S_prod (25%)</th>
+                        <th>S_qual (35%)</th>
+                        <th>S_time (25%)</th>
+                        <th>S_subj (15%)</th>
                         <th>NAK Score</th>
                         <th>Load Points</th>
                         <th></th>
@@ -70,6 +71,7 @@
                         <td>{{ number_format($report->productivity_score, 1) }}</td>
                         <td>{{ number_format($report->quality_score, 1) }}</td>
                         <td>{{ number_format($report->timeliness_score, 1) }}</td>
+                        <td style="font-weight:600;color:var(--color-primary);">{{ number_format($report->subjective_score ?? 0, 1) }}</td>
                         <td>
                             <strong style="font-size:15px;color:{{ $report->final_kpi_score >= 70 ? 'var(--color-success)' : ($report->final_kpi_score >= 50 ? 'var(--color-warning)' : 'var(--color-error)') }}">
                                 {{ number_format($report->final_kpi_score, 1) }}
@@ -94,15 +96,16 @@
             <button class="btn btn-ghost btn-sm" wire:click="$set('selectedUserId', null)">✕ Close</button>
         </div>
         <div class="card-body">
-            <div class="responsive-grid grid-cols-1 md:grid-cols-3 md:gap-6" style="margin-bottom:24px;">
-                @foreach(['productivity_score' => ['S_prod','Productivity'],'quality_score'=>['S_qual','Quality'],'timeliness_score'=>['S_time','Timeliness']] as $field => [$code, $label])
-                <div style="text-align:center;">
-                    <div style="font-size:36px;font-weight:700;letter-spacing:-0.03em;color:var(--color-primary);">
-                        {{ number_format($detail->$field, 1) }}
+            <div class="responsive-grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:gap-6" style="margin-bottom:24px;display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:16px;">
+                @foreach(['productivity_score' => ['S_prod (25%)','Productivity'],'quality_score'=>['S_qual (35%)','Quality'],'timeliness_score'=>['S_time (25%)','Timeliness'],'subjective_score'=>['S_subj (15%)','Subjective Evaluation']] as $field => [$code, $label])
+                <div style="text-align:center;padding:12px;background:var(--color-bg);border-radius:var(--radius-lg);">
+                    <div style="font-size:32px;font-weight:700;letter-spacing:-0.03em;color:var(--color-primary);">
+                        {{ number_format($detail->$field ?? 0, 1) }}
                     </div>
-                    <div style="font-size:13px;color:var(--color-text-secondary);">{{ $label }} ({{ $code }})</div>
+                    <div style="font-size:12px;color:var(--color-text-secondary);font-weight:600;">{{ $label }}</div>
+                    <div style="font-size:11px;color:var(--color-neutral);">{{ $code }}</div>
                     <div class="kpi-bar-track" style="margin-top:8px;">
-                        <div class="kpi-bar-fill" style="width:{{ min(100, $detail->$field) }}%"></div>
+                        <div class="kpi-bar-fill" style="width:{{ min(100, $detail->$field ?? 0) }}%"></div>
                     </div>
                 </div>
                 @endforeach

@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\KpiReport;
 use App\Models\GradeMultiplier;
+use App\Models\KpiWeightSetting;
+use App\Models\SubjectiveEvaluation;
 use App\Models\Task;
 use App\Models\User;
 use Carbon\Carbon;
@@ -22,7 +24,10 @@ class GenerateKpiReports extends Command
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
 
-        $this->info("Generating KPI reports for {$startDate->format('F Y')}...");
+        // Retrieve dynamic KPI weights for the period
+        $weights = KpiWeightSetting::getWeightsForPeriod($month, $year);
+
+        $this->info("Generating KPI reports for {$startDate->format('F Y')} using weights (Prod: {$weights['raw']['production']}%, Qual: {$weights['raw']['quality']}%, Time: {$weights['raw']['timeliness']}%, Subj: {$weights['raw']['subjective']}%)...");
 
         $users = User::role('staff')->get();
 
@@ -55,8 +60,27 @@ class GenerateKpiReports extends Command
             $onTimeTasks = $tasks->filter(fn($t) => $t->completed_at <= $t->deadline)->count();
             $timeScore = ($tasks->count() > 0) ? ($onTimeTasks / $tasks->count()) * 100 : 0;
 
-            // Final Score: Weighted Average (40% Prod, 30% Qual, 30% Time)
-            $finalScore = ($prodScore * 0.4) + ($qualScore * 0.3) + ($timeScore * 0.3);
+            // 4. Subjective Evaluation Score
+            $subjEval = SubjectiveEvaluation::where('user_id', $user->id)
+                ->where('month', $month)
+                ->where('year', $year)
+                ->first();
+
+            if ($subjEval && $subjEval->final_subjective_score) {
+                $subjScore = min(100, round(($subjEval->final_subjective_score / 5.0) * 100, 2));
+            } elseif ($subjEval && $subjEval->average_manager_score) {
+                $subjScore = min(100, round(($subjEval->average_manager_score / 5.0) * 100, 2));
+            } elseif ($subjEval && $subjEval->average_self_score) {
+                $subjScore = min(100, round(($subjEval->average_self_score / 5.0) * 100, 2));
+            } else {
+                $subjScore = 0;
+            }
+
+            // Final Score: Dynamic Weighted Average
+            $finalScore = ($prodScore * $weights['production']) + 
+                          ($qualScore * $weights['quality']) + 
+                          ($timeScore * $weights['timeliness']) + 
+                          ($subjScore * $weights['subjective']);
 
             KpiReport::updateOrCreate(
                 ['user_id' => $user->id, 'month' => $month, 'year' => $year],
@@ -65,8 +89,9 @@ class GenerateKpiReports extends Command
                     'productivity_score' => $prodScore,
                     'quality_score'      => $qualScore,
                     'timeliness_score'   => $timeScore,
+                    'subjective_score'   => $subjScore,
                     'final_kpi_score'    => $finalScore,
-                    'total_incentive'    => 0, // Incentive logic can be added later if needed
+                    'total_incentive'    => 0,
                 ]
             );
         }

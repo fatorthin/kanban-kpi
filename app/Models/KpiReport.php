@@ -10,13 +10,14 @@ class KpiReport extends Model
     protected $fillable = [
         'user_id', 'month', 'year',
         'total_load_points', 'productivity_score', 'quality_score',
-        'timeliness_score', 'final_kpi_score', 'total_incentive',
+        'timeliness_score', 'subjective_score', 'final_kpi_score', 'total_incentive',
     ];
 
     protected $casts = [
         'productivity_score' => 'decimal:2',
         'quality_score'      => 'decimal:2',
         'timeliness_score'   => 'decimal:2',
+        'subjective_score'   => 'decimal:2',
         'final_kpi_score'    => 'decimal:2',
         'total_incentive'    => 'decimal:2',
     ];

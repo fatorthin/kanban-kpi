@@ -98,13 +98,14 @@ graph TD
 ### 📍 Node 7: KPI Calculation Engine (`N7_KPI_ENGINE`)
 - **Primary Models:** `App\Models\KpiReport`
 - **Calculation Formula:**
-  - **S_prod (Productivity Score):** `(Completed Points / Total Assigned Points) * 100`
-  - **S_qual (Quality Score):** `100 - (Revision Count * 15)`
-  - **S_time (Timeliness Score):** Deadline vs `completed_at` (-10 points per day late)
-  - **NAK (Final KPI Score 0-100):** `(S_prod * 0.4) + (S_qual * 0.3) + (S_time * 0.3)`
-  - **Total Incentive:** `NAK * Total Points * base_point_rate`
+  - **S_prod (Productivity Score - 25%):** `(Completed Points / Target Points) * 100` (Max 100)
+  - **S_qual (Quality Score - 35%):** `100 - (Revision Count * 10)`
+  - **S_time (Timeliness Score - 25%):** `(Completed On-Time Tasks / Total Tasks) * 100`
+  - **S_subj (Subjective Score - 15%):** `(Final Subjective Score / 5.0) * 100`
+  - **NAK (Final KPI Score 0-100):** `(S_prod * 0.25) + (S_qual * 0.35) + (S_time * 0.25) + (S_subj * 0.15)`
 - **Livewire Component:**
   - `App\Livewire\KpiReports\Index` ([routes/web.php](file:///d:/laragon/www/kanban-kpi/routes/web.php#L48))
+
 
 ---
 

@@ -16,6 +16,7 @@ use App\Livewire\SubjectiveEvaluations\Index as SubjectiveEvaluationsIndex;
 use App\Livewire\SubjectiveEvaluations\Form as SubjectiveEvaluationsForm;
 use App\Livewire\SubjectiveEvaluations\Indicators as SubjectiveEvaluationsIndicators;
 use App\Livewire\Settings\WhatsAppGateway as WhatsAppGatewaySettings;
+use App\Livewire\KpiWeights\Index as KpiWeightsIndex;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -59,9 +60,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/activity-logs', ActivityLogsIndex::class)->name('activity-logs');
         Route::get('/divisions', DivisionsIndex::class)->name('divisions');
         Route::get('/grade-multipliers', GradeMultipliersIndex::class)->name('grade-multipliers');
+        Route::get('/kpi-weights', KpiWeightsIndex::class)->name('kpi-weights');
         Route::get('/settings/whatsapp', WhatsAppGatewaySettings::class)->name('settings.whatsapp');
     });
 });
+
 
 
 // --------------------------------------------------------------------- Cron / Webhook
